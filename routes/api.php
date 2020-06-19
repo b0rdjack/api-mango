@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -14,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('admin', 'AdministratorController@login');
+Route::post('customer', 'CustomerController@register');
+Route::get('customer', 'CustomerController@login');
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
