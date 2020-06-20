@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\User;
 use App\Customer;
+use App\Notifications\SignupActivate;
 use App\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class CustomerController extends Controller
 {
@@ -32,27 +34,35 @@ class CustomerController extends Controller
             $date_of_birth = array_pop($validateData);
             $validateData['password'] = Hash::make($validateData['password']);
             $validateData += ['role_id' => Role::where('label', 'customer')->first()->id];
+            $validateData += ['activation_token' => Str::random(60)];
             $user = User::create($validateData);
-            $accessToken = $user->createToken('authToken')->accessToken;
+
+            // $accessToken = $user->createToken('authToken')->accessToken;
 
             $new_customer = [
                 'date_of_birth' => date_create_from_format('Y-m-d H:i:s', $date_of_birth),
                 'user_id' => $user->id
             ];
             Customer::create($new_customer);
-            $full_customer = [
-                'id' => $user->id,
-                'last_name' => $user->last_name,
-                'first_name' => $user->first_name,
-                'email' => $user->email,
-                'date_of_birth' => $date_of_birth
-            ];
 
+            $user->notify(new SignupActivate($user));
+            // $full_customer = [
+            //     'id' => $user->id,
+            //     'last_name' => $user->last_name,
+            //     'first_name' => $user->first_name,
+            //     'email' => $user->email,
+            //     'date_of_birth' => $date_of_birth
+            // ];
+
+            // return response([
+            //     'error' => false,
+            //     'user' => $full_customer,
+            //     'type_of_token' => 'Bearer',
+            //     'access_token' => $accessToken
+            // ]);
             return response([
                 'error' => false,
-                'user' => $full_customer,
-                'type_of_token' => 'Bearer',
-                'access_token' => $accessToken
+                'user' => 'Veuillez confirmer votre compte.'
             ]);
         }
     }
