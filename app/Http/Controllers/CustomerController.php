@@ -16,6 +16,7 @@ class CustomerController extends Controller
 {
     public function register(Request $request)
     {
+        // Validate parameters
         $validateData = Validator::make($request->all(), [
             'last_name' => 'required|max:55',
             'first_name' => 'required|max:55',
@@ -24,42 +25,35 @@ class CustomerController extends Controller
             'date_of_birth' => 'required'
         ]);
 
+        // Send error message if at least one parameter fails validation
         if ($validateData->fails()) {
             return response([
                 "error" => true,
                 "messages" => $validateData->messages()
             ]);
         } else {
-            $validateData = $request->all();
-            $date_of_birth = array_pop($validateData);
-            $validateData['password'] = Hash::make($validateData['password']);
-            $validateData += ['role_id' => Role::where('label', 'customer')->first()->id];
-            $validateData += ['activation_token' => Str::random(60)];
-            $user = User::create($validateData);
 
-            // $accessToken = $user->createToken('authToken')->accessToken;
+            // Create user
+            $user = new User([
+                'last_name' => $request->last_name,
+                'first_name' => $request->first_name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role_id' => Role::where('label', 'customer')->first()->id,
+                'activation_token' => Str::random(60)
+            ]);
+            $user->save();
 
-            $new_customer = [
-                'date_of_birth' => date_create_from_format('Y-m-d H:i:s', $date_of_birth),
+            // Create customer
+            $customer = new Customer([
+                'date_of_birth' => date_create_from_format('Y-m-d H:i:s', $request->date_of_birth),
                 'user_id' => $user->id
-            ];
-            Customer::create($new_customer);
+            ]);
+            $customer->save();
 
+            // Send e-mail for account confirmation
             $user->notify(new SignupActivate($user));
-            // $full_customer = [
-            //     'id' => $user->id,
-            //     'last_name' => $user->last_name,
-            //     'first_name' => $user->first_name,
-            //     'email' => $user->email,
-            //     'date_of_birth' => $date_of_birth
-            // ];
 
-            // return response([
-            //     'error' => false,
-            //     'user' => $full_customer,
-            //     'type_of_token' => 'Bearer',
-            //     'access_token' => $accessToken
-            // ]);
             return response([
                 'error' => false,
                 'user' => 'Veuillez confirmer votre compte.'
@@ -69,17 +63,28 @@ class CustomerController extends Controller
 
     public function login(Request $request)
     {
+        // Validate parameters
         $validateData = Validator::make($request->all(), [
             'email' => 'email|required',
             'password' => 'required'
         ]);
+
+        // Send error message if at least one parameter fails validation
         if ($validateData->fails()) {
             return response([
                 "error" => true,
                 "messages" => $validateData->messages()
             ]);
         } else {
-            if (!Auth::attempt($request->all())) {
+            $credentials = [
+                'email' => $request->email,
+                'password' => $request->password,
+                'active' => 1,
+                'deleted_at' => null
+            ];
+
+            // If authentication attempt failed
+            if (!Auth::attempt($credentials)) {
                 return response([
                     'error' => true,
                     'messages' => 'Invalid Credentials'
@@ -87,20 +92,14 @@ class CustomerController extends Controller
             } else {
                 $user = Auth::user();
                 $role_id = Role::where('label', 'customer')->first()->id;
+
+                // Check if the user is a customer
                 if ($user->role_id == $role_id) {
-                    $accessToken = $user->createToken('authToken')->accessToken;
-                    $customer = Customer::where('user_id', $user->id)->first();
-                    $full_customer = [
-                        'id' => $user->id,
-                        'last_name' => $user->last_name,
-                        'first_name' => $user->first_name,
-                        'email' => $user->email,
-                        'date_of_birth' => $customer->date_of_birth
-                    ];
+                    $accessToken = $user->createToken('Personal Access Token')->accessToken;
                     return response([
                         'error' => false,
-                        'user' => $full_customer,
-                        'access_token' => $accessToken
+                        'access_token' => $accessToken,
+                        'token_type' => 'Bearer'
                     ]);
                 } else {
                     return response([
