@@ -45,8 +45,8 @@ class PasswordResetRequest extends Notification
         $url = url('/reset_password/find/' . $this->token);
         return (new MailMessage)
             ->subject('Demande de modification de votre mot de passe')
-            ->line('')
             ->line('Si vous avez demandé une réinitialisation, veuillez cliquer sur le bouton ci-dessous.')
+            ->line('Ce lien expire dans 15 minutes.')
             ->line('Dans le cas contraire, ignorez simplement cet e-mail.')
             ->action('Réinitialiser mon mot de passe', url($url));
     }

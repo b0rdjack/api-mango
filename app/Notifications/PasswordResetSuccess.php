@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class PasswordResetSucess extends Notification
+class PasswordResetSuccess extends Notification
 {
     use Queueable;
 
@@ -43,7 +43,7 @@ class PasswordResetSucess extends Notification
         return (new MailMessage)
             ->subject('Modification de votre mot de passe effectuée')
             ->line('La modification de votre mot de passe a bien été effectuée.')
-            ->line("Si vous êtes à l'origine de cette modification, aucune action n'est demandé de votre part.")
+            ->line("Si vous êtes à l'origine de cette modification, aucune action future n'est requise de votre part.")
             ->line("Si vous n'est pas à l'origine de cette modification, veuillez contacter le support technique.")
             ->line("Merci d'utiliser notre application !");
     }

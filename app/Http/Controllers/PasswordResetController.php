@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Notifications\PasswordResetRequest;
-use App\Notifications\PasswordResetSucess;
+use App\Notifications\PasswordResetSuccess;
 use App\User;
 use App\Role;
 use App\PasswordReset;
@@ -103,7 +103,6 @@ class PasswordResetController extends Controller
     $validateData = Validator::make($request->all(), [
       'password' => [
         'required',
-        'string',
         'regex:/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,32}$/',
         'confirmed'
       ]
@@ -135,7 +134,7 @@ class PasswordResetController extends Controller
             // Modify the password and send a e-mail confirmation
             $user->password = Hash::make($request->password);
             $user->save();
-            $user->notify(new PasswordResetSucess());
+            $user->notify(new PasswordResetSuccess());
             $passwordReset->delete();
             return view('reset_password_validation')->with('modified', true);
           } else {

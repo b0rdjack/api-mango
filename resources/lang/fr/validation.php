@@ -87,7 +87,7 @@ return array(
                 'string' => 'Le champ nouveau mot de passe doit conteniur au moins :min caractères.'
             ],
             'required' => 'Le champ nouveau mot de passe est obligatoire.',
-            'regex' => 'Le nouveau mot de passe doit comporter au moins une majuscule, une minuscule, un chiffre et un caractère spéciale.',
+            'regex' => 'Le mot de passe doit comporter au moins une majuscule, une minuscule, un chiffre et un caractère spéciale.',
             'confirmed' => 'Les deux mots de passe ne correspondent pas.'
         ]
     ],

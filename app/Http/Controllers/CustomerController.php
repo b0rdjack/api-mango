@@ -22,7 +22,11 @@ class CustomerController extends Controller
             'last_name' => 'required|max:55',
             'first_name' => 'required|max:55',
             'email' => 'email|required|unique:users',
-            'password' => 'required',
+            'password' => [
+                'required',
+                'regex:/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,32}$/',
+                'confirmed'
+            ],
             'date_of_birth' => 'required'
         ]);
 
