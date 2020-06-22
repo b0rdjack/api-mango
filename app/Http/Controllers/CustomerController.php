@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Helpers\Helper;
 
 class CustomerController extends Controller
 {
@@ -63,51 +64,6 @@ class CustomerController extends Controller
 
     public function login(Request $request)
     {
-        // Validate parameters
-        $validateData = Validator::make($request->all(), [
-            'email' => 'email|required',
-            'password' => 'required'
-        ]);
-
-        // Send error message if at least one parameter fails validation
-        if ($validateData->fails()) {
-            return response([
-                "error" => true,
-                "messages" => $validateData->messages()
-            ]);
-        } else {
-            $credentials = [
-                'email' => $request->email,
-                'password' => $request->password,
-                'active' => 1,
-                'deleted_at' => null
-            ];
-
-            // If authentication attempt failed
-            if (!Auth::attempt($credentials)) {
-                return response([
-                    'error' => true,
-                    'messages' => 'Invalid Credentials'
-                ]);
-            } else {
-                $user = Auth::user();
-                $role_id = Role::where('label', 'customer')->first()->id;
-
-                // Check if the user is a customer
-                if ($user->role_id == $role_id) {
-                    $accessToken = $user->createToken('Personal Access Token')->accessToken;
-                    return response([
-                        'error' => false,
-                        'access_token' => $accessToken,
-                        'token_type' => 'Bearer'
-                    ]);
-                } else {
-                    return response([
-                        'error' => true,
-                        'messages' => 'Forbidden'
-                    ], 403);
-                }
-            }
-        }
+        return Helper::login($request, 'customer');
     }
 }
