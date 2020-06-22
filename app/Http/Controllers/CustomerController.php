@@ -56,7 +56,7 @@ class CustomerController extends Controller
 
             return response([
                 'error' => false,
-                'user' => 'Veuillez confirmer votre compte.'
+                'message' => 'Veuillez confirmer votre compte.'
             ]);
         }
     }

@@ -17,3 +17,5 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('signup/activate/{token}', 'UserController@activate');
+Route::get('reset_password/find/{token}', 'PasswordResetController@find');
+Route::post('reset_password/validate/{token}', 'PasswordResetController@reset');
