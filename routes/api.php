@@ -13,10 +13,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+/**
+ * Public routes
+ */
 Route::get('admin', 'AdministratorController@login');
 Route::post('customer', 'CustomerController@register');
 Route::get('customer', 'CustomerController@login');
 Route::post('reset_password', 'PasswordResetController@create');
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+
+/**
+ * Logged routes
+ */
+Route::group(['middleware' => 'auth:api'], function () {
+    Route::post('/user/logout', 'UserController@logout')->middleware('role:customer,professional,admin');
+    Route::delete('/customer', 'CustomerController@delete')->middleware('role:customer');
+    Route::delete('/professional', 'ProfessionalController@delete')->middleware('role:professional');
 });

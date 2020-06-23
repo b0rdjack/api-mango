@@ -10,6 +10,9 @@ use App\Role;
 class Helper
 {
 
+  /**
+   * Log users
+   */
   public static function login(Request $request, $role)
   {
 
