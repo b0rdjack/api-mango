@@ -36,5 +36,10 @@ Route::group(['middleware' => 'auth:api'], function () {
     /**
      * Transport
      */
-    Route::get('/transports', 'TransportController@index')->middleware(('role:customer'));
+    Route::get('/transports', 'TransportController@index')->middleware('role:customer');
+
+    /**
+     * Category
+     */
+    Route::get('/categories', 'CategoryController@index')->middleware('role:customer');
 });
