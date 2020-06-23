@@ -25,7 +25,16 @@ Route::post('reset_password', 'PasswordResetController@create');
  * Logged routes
  */
 Route::group(['middleware' => 'auth:api'], function () {
+
+    /**
+     * Account management
+     */
     Route::post('/user/logout', 'UserController@logout')->middleware('role:customer,professional,admin');
     Route::delete('/customer', 'CustomerController@delete')->middleware('role:customer');
     Route::delete('/professional', 'ProfessionalController@delete')->middleware('role:professional');
+
+    /**
+     * Transport
+     */
+    Route::get('/transports', 'TransportController@index')->middleware(('role:customer'));
 });
