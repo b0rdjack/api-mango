@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Price extends Model
 {
     protected $fillable = ['amount'];
+    protected $hidden = ['created_at', 'updated_at', 'pivot'];
 
     public function activity(){
         return $this->belongsTo('App\Activity');

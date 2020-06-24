@@ -9,7 +9,7 @@ class Category extends Model
     protected $fillable = ['label'];
     protected $hidden = ['created_at', 'updated_at'];
 
-    public function subCategories() {
+    public function subcategories() {
         return $this->belongsToMany('App\Subcategory');
     }
 }
