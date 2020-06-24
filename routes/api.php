@@ -47,4 +47,5 @@ Route::group(['middleware' => 'auth:api'], function () {
      * Activity
      */
     Route::get('/activities', 'ActivityController@index')->middleware('role:administrator');
+    Route::get('/activities/{id}', 'ActivityController@show')->middleware('role:administrator');
 });

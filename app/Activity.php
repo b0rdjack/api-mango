@@ -28,4 +28,8 @@ class Activity extends Model
     {
         return $this->belongsToMany('App\Trips');
     }
+
+    public function professional(){
+        return $this->belongsTo('App\Professional');
+    }
 }
