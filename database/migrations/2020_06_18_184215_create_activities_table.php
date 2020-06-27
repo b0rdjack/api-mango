@@ -17,18 +17,18 @@ class CreateActivitiesTable extends Migration
             $table->id();
             $table->string('name');
             $table->string('address');
-            $table->string('city');
-            $table->string('postal_code');
-            $table->string('siren');
-            $table->string('phone_number');
+            $table->char('siren',9);
+            $table->char('phone_number',10);
             $table->decimal('latitude', 10, 8);
             $table->decimal('longitude', 11, 8);
             $table->integer('opening_hours');
             $table->integer('closing_hours');
             $table->integer('average_time_spent');
             $table->tinyInteger('disabled_access');
+            $table->foreignId('postal_code_id')->constrained();
             $table->foreignId('professional_id')->nullable()->constrained();
             $table->foreignId('subcategory_id')->constrained();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

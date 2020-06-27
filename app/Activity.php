@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Activity extends Model
 {
-    protected $fillable = ['name', 'address', 'city', 'postal_code', 'siren', 'phone_number', 'longitude', 'latitude', 'opening_hours', 'closing_hours', 'average_time_spent', 'disabled_access'];
+    protected $fillable = ['name', 'address', 'siren', 'phone_number', 'longitude', 'latitude', 'opening_hours', 'closing_hours', 'average_time_spent', 'disabled_access'];
     protected $hidden = ['created_at', 'updated_at', 'pivot', 'siren'];
 
     public function subcategory()
@@ -31,5 +31,9 @@ class Activity extends Model
 
     public function professional(){
         return $this->belongsTo('App\Professional');
+    }
+
+    public function postal_code(){
+        return $this->belongsTo('App\Postal_code');
     }
 }

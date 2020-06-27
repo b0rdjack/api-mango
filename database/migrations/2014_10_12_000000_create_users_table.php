@@ -21,6 +21,10 @@ class CreateUsersTable extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+            $table->boolean('active')->default(false);
+            $table->string('activation_token');
+            $table->softDeletes();
+            $table->foreignId('role_id')->constrained();
             $table->timestamps();
         });
     }
