@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             StateSeeder::class,
             CategorySubCategorySeeder::class,
+            QuantitySeeder::class,
             CitySeeder::class,
             PostalCodeSeeder::class,
             TagSeeder::class,
