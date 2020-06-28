@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Activity;
 use App\Postal_code;
+use App\Price;
+use App\Quantity;
 use App\State;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +24,7 @@ class ActivityController extends Controller
 
   public function show($id)
   {
-    $activity = Activity::with('postal_code')->with('subcategory')->with('professional')->with('tags')->find($id);
+    $activity = Activity::with('postal_code')->with('subcategory')->with('professional')->with('tags')->with('prices')->with('prices.quantity')->find($id);
     $user = Auth::user();
     if ($activity && $user) {
       // Show state only if the user in not an customer
@@ -66,7 +68,12 @@ class ActivityController extends Controller
       'tags.*.id' => 'exists:tags,id|required',
       'postal_code.id' => 'exists:postal_codes,id|required',
       'professional.id' => 'exists:professionals,id',
-      'state.id' => 'exists:states,id'
+      'state.id' => 'exists:states,id|required',
+      'quantity.id' => 'exists:quantities,id|required',
+      'price.amount' => [
+        'required',
+        'regex:/^\d+(\.\d{1,2})?$/'
+      ]
     ]);
 
     // Send errors if the validator failed
@@ -87,7 +94,7 @@ class ActivityController extends Controller
         ]);
       } else {
         // Create activity
-        $activity = new Activity($request->except(['address', 'postal_code', 'subcategory', 'tags']));
+        $activity = new Activity($request->except(['address', 'postal_code', 'subcategory', 'tags', 'quantity', 'price']));
 
         //Process to check address
         $activity = $this->checkAddress($activity, $request->input('address'), $request->input('postal_code.code'));
@@ -108,7 +115,7 @@ class ActivityController extends Controller
           return response([
             "error" => false,
             "message" => "Activité créée.",
-            "activity" => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags'),
+            "activity" => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->loads('prices.quantity'),
           ]);
         } else {
           return response([
@@ -138,7 +145,12 @@ class ActivityController extends Controller
       'subcategory.id' => 'exists:subcategories,id',
       'tags.*.id' => 'exists:tags,id',
       'postal_code.id' => 'exists:postal_code,id',
-      'state.id' => 'exists:states,id'
+      'state.id' => 'exists:states,id',
+      'quantity.id' => 'exists:quantities,id',
+      'price.amount' => [
+        'required',
+        'regex:/^\d+(\.\d{1,2})?$/'
+      ]
     ]);
 
     // Send errors if the validator failed
@@ -175,7 +187,7 @@ class ActivityController extends Controller
         return response([
           "error" => false,
           "message" => "Activité mise à jour.",
-          "activity" => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags'),
+          "activity" => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
         ]);
       } else {
         return response([
@@ -236,14 +248,19 @@ class ActivityController extends Controller
     } else {
       $activity->state_id = State::where('label', 'Pending')->first()->id;
     }
-
     // Create subcategory relation
     $activity->subcategory_id = $request->input('subcategory.id');
+
+    // We are saving here because to save an Activity we need a state_id and a subcategory_id
+    if (!$activity->save()) return false;
 
     // Create professional relation
     $activity->professional_id = $request->input('professional.id');
 
     if (!$activity->save()) return false;
+
+    $price = $this->createPrice($request->input('price.amount'), $activity->id, $request->input('quantity.id'));
+    if (!$price) return false;
 
     // Create tags relation
     $tags = $request->input('tags');
@@ -256,11 +273,7 @@ class ActivityController extends Controller
     // Erase and create new relation(s) with the tag(s) given in the request body
     $activity->tags()->sync($ids);
 
-    if ($activity->save()) {
-      return $activity;
-    } else {
-      return false;
-    }
+    return ($activity->save()) ? $activity : false;
   }
 
   /**
@@ -271,12 +284,28 @@ class ActivityController extends Controller
     // Update state
     if ($request->has('state')) {
       $activity->state_id = $request->input('state.id');
+      if (!$activity->save()) return false;
     }
 
     // Update sub
     if ($request->has('subcategory')) {
       $activity->subcategory_id = $request->input('subcategory.id');
+      if (!$activity->save()) return false;
     }
+
+    //Update price
+    if ($request->has('quantity') && $request->has('price')) {
+
+      // Delete old price
+      foreach ($activity->prices() as $price) {
+        $price->delete();
+      }
+
+      // Create new price
+      $price = $this->createPrice($request->input('price.amount'), $activity->id, $request->input('quantity.id'));
+      if (!$price) return false;
+    }
+
 
     // Update tags
     if ($request->has('tags')) {
@@ -290,10 +319,17 @@ class ActivityController extends Controller
       // Erase and create new relation(s) with the tag(s) given in the request body
       $activity->tags()->sync($ids);
     }
-    if ($activity->save()) {
-      return $activity;
-    } else {
-      return false;
-    }
+
+    return ($activity->save()) ? $activity : false;
+  }
+
+  private function createPrice($amount, $activity_id, $quantity_id)
+  {
+    $price = new Price([
+      'amount' => $amount
+    ]);
+    $price->activity_id = $activity_id;
+    $price->quantity_id = $quantity_id;
+    return ($price->save()) ? $price : false;
   }
 }
