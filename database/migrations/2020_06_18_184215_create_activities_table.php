@@ -28,6 +28,7 @@ class CreateActivitiesTable extends Migration
             $table->foreignId('postal_code_id')->constrained();
             $table->foreignId('professional_id')->nullable()->constrained();
             $table->foreignId('subcategory_id')->constrained();
+            $table->foreignId('state_id')->constrained();
             $table->softDeletes();
             $table->timestamps();
         });

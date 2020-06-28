@@ -48,4 +48,16 @@ class User extends Authenticatable
         $role_id = Role::where('label', $role)->first()->id;
         return $this->role_id === $role_id;
     }
+
+    public function isAdministrator(){
+        return $this->hasRole('administrator');
+    }
+
+    public function isProfessional() {
+        return $this->hasRole('professional');
+    }
+
+    public function isCustomer(){
+        return $this->hasRole('customer');
+    }
 }

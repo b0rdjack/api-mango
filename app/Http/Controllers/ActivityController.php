@@ -3,11 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Activity;
-use App\City;
 use App\Postal_code;
-use App\Subcategory;
-use App\Tag;
+use App\State;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -23,7 +22,28 @@ class ActivityController extends Controller
 
   public function show($id)
   {
-    return Activity::with('postal_code')->with('subcategory')->with('professional')->with('tags')->find($id);
+    $activity = Activity::with('postal_code')->with('subcategory')->with('professional')->with('tags')->find($id);
+    $user = Auth::user();
+    if ($activity && $user) {
+      // Show state only if the user in not an customer
+      if (!$user->isCustomer()) {
+        return $activity->load('state');
+      } else {
+        if (Activity::find($id)->isAccepted()) {
+          return $activity;
+        } else {
+          return response([
+            'error' => true,
+            'messages' => ["L'activité demandé n'a pas encore été accepté"]
+          ]);
+        }
+      }
+    } else {
+      return response([
+        'error' => true,
+        'messages' => ["L'activité demandé n'existe pas"]
+      ]);
+    }
   }
 
   /**
@@ -45,7 +65,8 @@ class ActivityController extends Controller
       'subcategory.id' => 'exists:subcategories,id|required',
       'tags.*.id' => 'exists:tags,id|required',
       'postal_code.id' => 'exists:postal_codes,id|required',
-      'professional.id' => 'exists:professionals,id'
+      'professional.id' => 'exists:professionals,id',
+      'state.id' => 'exists:states,id'
     ]);
 
     // Send errors if the validator failed
@@ -72,7 +93,8 @@ class ActivityController extends Controller
         $activity = $this->checkAddress($activity, $request->input('address'), $request->input('postal_code.code'));
 
         // Create relationships
-        $activity_with_relations = $this->updateRelations($activity, $request);
+        $activity_with_relations = $this->createRelations($activity, $request);
+
         if (!$activity_with_relations) {
           return response([
             "error" => true,
@@ -86,7 +108,7 @@ class ActivityController extends Controller
           return response([
             "error" => false,
             "message" => "Activité créée.",
-            "activity" => Activity::with('postal_code')->with('subcategory')->with('professional')->with('tags')->find($activity->id)
+            "activity" => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags'),
           ]);
         } else {
           return response([
@@ -115,7 +137,8 @@ class ActivityController extends Controller
       'disabled_access' => 'boolean',
       'subcategory.id' => 'exists:subcategories,id',
       'tags.*.id' => 'exists:tags,id',
-      'postal_code.id' => 'exists:postal_code,id'
+      'postal_code.id' => 'exists:postal_code,id',
+      'state.id' => 'exists:states,id'
     ]);
 
     // Send errors if the validator failed
@@ -152,7 +175,7 @@ class ActivityController extends Controller
         return response([
           "error" => false,
           "message" => "Activité mise à jour.",
-          "activity" => Activity::with('postal_code')->with('subcategory')->with('professional')->with('tags')->find($activity->id)
+          "activity" => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags'),
         ]);
       } else {
         return response([
@@ -179,10 +202,9 @@ class ActivityController extends Controller
       $properties =  $response['features'][0]['properties'];
       $coordinates = $response['features'][0]['geometry']['coordinates'];
 
-      // Check if the city and the postal code exists in the database
-      $city = City::where('label', $properties['city'])->first();
+      // Check if postal code exists in the database
       $postal_code = Postal_code::where('code', $properties['postcode'])->first();
-      if ($city && $postal_code) {
+      if ($postal_code) {
         $activity->address = $properties['name'];
         $activity->postal_code_id = $postal_code->id;
         $activity->longitude = $coordinates[0];
@@ -203,23 +225,60 @@ class ActivityController extends Controller
   }
 
   /**
+   * Create relationships
+   */
+  private function createRelations($activity, $request)
+  {
+    // Create state relation
+    $administrator = Auth::user()->isAdministrator();
+    if ($administrator) {
+      $activity->state_id = $request->input('state.id');
+    } else {
+      $activity->state_id = State::where('label', 'Pending')->first()->id;
+    }
+
+    // Create subcategory relation
+    $activity->subcategory_id = $request->input('subcategory.id');
+
+    // Create professional relation
+    $activity->professional_id = $request->input('professional.id');
+
+    if (!$activity->save()) return false;
+
+    // Create tags relation
+    $tags = $request->input('tags');
+    $ids = [];
+    // Iterate through each tag
+    foreach ($tags as $tag) {
+      // Get the Tag's id
+      array_push($ids, $tag['id']);
+    }
+    // Erase and create new relation(s) with the tag(s) given in the request body
+    $activity->tags()->sync($ids);
+
+    if ($activity->save()) {
+      return $activity;
+    } else {
+      return false;
+    }
+  }
+
+  /**
    * Updates relationships
    */
   private function updateRelations($activity, $request)
   {
-    // Create or update sub
+    // Update state
+    if ($request->has('state')) {
+      $activity->state_id = $request->input('state.id');
+    }
+
+    // Update sub
     if ($request->has('subcategory')) {
       $activity->subcategory_id = $request->input('subcategory.id');
-      if (!$activity->save()) return false;
     }
 
-    // Create professional
-    if ($request->has('professional')) {
-      $activity->professional_id = $request->input('professional.id');
-      if (!$activity->save()) return false;
-    }
-
-    // Create or update tags
+    // Update tags
     if ($request->has('tags')) {
       $tags = $request->input('tags');
       $ids = [];

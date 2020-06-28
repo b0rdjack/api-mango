@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Activity extends Model
 {
     protected $fillable = ['name', 'address', 'siren', 'phone_number', 'longitude', 'latitude', 'opening_hours', 'closing_hours', 'average_time_spent', 'disabled_access'];
-    protected $hidden = ['created_at', 'updated_at', 'pivot', 'siren'];
+    protected $hidden = ['created_at', 'updated_at', 'pivot', 'siren', 'postal_code_id', 'professional_id', 'subcategory_id', 'state_id', 'deleted_at'];
 
     public function subcategory()
     {
@@ -35,5 +35,14 @@ class Activity extends Model
 
     public function postal_code(){
         return $this->belongsTo('App\Postal_code');
+    }
+
+    public function state(){
+        return $this->belongsTo('App\State');
+    }
+
+    public function isAccepted(){
+        $state_id = State::where('label', 'Accepted')->first()->id;
+        return $this->state_id === $state_id;
     }
 }
