@@ -17,11 +17,17 @@ use Illuminate\Support\Facades\Validator;
 class ActivityController extends Controller
 {
 
+  /**
+   * Show all activities
+   */
   public function index()
   {
     return Activity::with('subcategory')->with('professional')->with('tags')->get();
   }
 
+  /**
+   * Show an activity
+   */
   public function show($id)
   {
     $activity = Activity::with('postal_code')->with('subcategory')->with('professional')->with('tags')->with('prices')->with('prices.quantity')->find($id);
@@ -115,7 +121,7 @@ class ActivityController extends Controller
           return response([
             "error" => false,
             "message" => "Activité créée.",
-            "activity" => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->loads('prices.quantity'),
+            "activity" => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
           ]);
         } else {
           return response([
@@ -197,6 +203,90 @@ class ActivityController extends Controller
       }
     }
   }
+
+  /**
+   * ACTIVITY STATE MANAGEMENT
+   * Pending -> Accept
+   * Accept -> Pending
+   * Pending -> Denied
+   * Denied -> Pending
+   */
+
+  /**
+   * Accept an activity
+   */
+  public function accept($id)
+  {
+    return $this->changeState($id, 'Pending', 'Accepted', 'En cours');
+  }
+
+  /**
+   * Refuse an activity
+   */
+  public function deny($id)
+  {
+    return $this->changeState($id, 'Pending', 'Denied', 'En cours');
+  }
+
+  /**
+   * Change the state of an activity to Pending
+   */
+
+  public function pend($id)
+  {
+    $activity = Activity::find($id);
+    if ($activity) {
+      $activity->state_id = State::where('label', 'Pending')->first()->id;
+      $activity->save();
+      return response([
+        "error" => false,
+        "message" => "État modifié.",
+        "activity" => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
+      ]);
+    } else {
+      return response([
+        'error' => true,
+        'messages' => ["L'activité demandé n'existe pas"]
+      ]);
+    }
+  }
+
+  /**
+   * LOGICAL FUNCTIONS
+   */
+
+  /**
+   * Change the state of an activity
+   */
+  private function changeState($id, $check_state_label, $new_state_label, $error_msg)
+  {
+    $state_id = State::where('label', $check_state_label)->first()->id;
+    $activity = Activity::find($id);
+
+    if ($activity) {
+      if ($activity->state->id == $state_id) {
+        $activity->state_id = State::where('label', $new_state_label)->first()->id;
+        $activity->save();
+        return response([
+          "error" => false,
+          "message" => "État modifié.",
+          "activity" => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
+        ]);
+      } else {
+        return response([
+          "error" => true,
+          "messages" => ["Vous ne pouvez approuver uniquement une activité qui est à l'état '" . $error_msg . "'."]
+        ]);
+      }
+    } else {
+      return response([
+        'error' => true,
+        'messages' => ["L'activité demandé n'existe pas"]
+      ]);
+    }
+  }
+
+
 
   /**
    * Check the validity of an Address

@@ -50,4 +50,9 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/activities/{id}', 'ActivityController@show')->middleware('role:administrator');
     Route::put('/activities/{id}', 'ActivityController@update')->middleware('role:administrator');
     Route::post('/activities', 'ActivityController@store')->middleware('role:administrator');
+
+    // State
+    Route::get('/activities/{id}/accept', 'ActivityController@accept')->middleware('role:administrator');
+    Route::get('/activities/{id}/deny', 'ActivityController@deny')->middleware('role:administrator');
+    Route::get('/activities/{id}/pend', 'ActivityController@pend')->middleware('role:administrator');
 });
