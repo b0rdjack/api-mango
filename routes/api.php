@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 /**
- * Public routes
+ * ============================================= Login and Register =============================================
  */
 Route::get('admin', 'AdministratorController@login');
 Route::post('customer', 'CustomerController@register');
@@ -27,32 +27,35 @@ Route::post('reset_password', 'PasswordResetController@create');
 Route::group(['middleware' => 'auth:api'], function () {
 
     /**
-     * Account management
+     * ============================================= Account =============================================
      */
     Route::post('/user/logout', 'UserController@logout')->middleware('role:customer,professional,admin');
     Route::delete('/customer', 'CustomerController@delete')->middleware('role:customer');
     Route::delete('/professional', 'ProfessionalController@delete')->middleware('role:professional');
 
     /**
-     * Transport
+     * ============================================= Transport =============================================
      */
     Route::get('/transports', 'TransportController@index')->middleware('role:customer');
 
     /**
-     * Category
+     * ============================================= Category =============================================
      */
     Route::get('/categories', 'CategoryController@index')->middleware('role:customer');
 
     /**
-     * Activity
+     * ============================================= Activity =============================================
      */
     Route::get('/activities', 'ActivityController@index')->middleware('role:administrator');
     Route::get('/activities/{id}', 'ActivityController@show')->middleware('role:administrator');
     Route::put('/activities/{id}', 'ActivityController@update')->middleware('role:administrator');
     Route::post('/activities', 'ActivityController@store')->middleware('role:administrator');
+    Route::delete('/activities/{id}', 'ActivityController@delete')->middleware('role:administrator');
 
     // State
     Route::get('/activities/{id}/accept', 'ActivityController@accept')->middleware('role:administrator');
     Route::get('/activities/{id}/deny', 'ActivityController@deny')->middleware('role:administrator');
     Route::get('/activities/{id}/pend', 'ActivityController@pend')->middleware('role:administrator');
+
+
 });

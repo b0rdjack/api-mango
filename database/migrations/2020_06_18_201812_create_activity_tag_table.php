@@ -15,8 +15,8 @@ class CreateActivityTagTable extends Migration
     {
         Schema::create('activity_tag', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('activity_id')->constrained();
-            $table->foreignId('tag_id')->constrained();
+            $table->foreignId('activity_id')->constrained()->onDelete('cascade');
+            $table->foreignId('tag_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -264,7 +264,29 @@ class ActivityController extends Controller
   }
 
   /**
-   * LOGICAL FUNCTIONS
+   * Delete activity (SoftDelete)
+   */
+
+  public function delete($id)
+  {
+    $activity = Activity::find($id);
+    if ($activity) {
+      $activity->delete();
+      return response([
+        'error' => false,
+        "messages" => ["L'activité a bien été supprimée."]
+      ]);
+    } else {
+      return response([
+        'error' => true,
+        'messages' => ["L'activité demandé n'existe pas"]
+      ]);
+    }
+  }
+
+
+  /**
+   * ====================================== LOGICAL FUNCTIONS ======================================
    */
 
   /**
@@ -297,8 +319,6 @@ class ActivityController extends Controller
       ]);
     }
   }
-
-
 
   /**
    * Check the validity of an Address
