@@ -61,7 +61,7 @@ class CustomerController extends Controller
 
             return response([
                 'error' => false,
-                'message' => 'Veuillez confirmer votre compte.'
+                'messages' => ['Veuillez confirmer votre compte.']
             ]);
         }
     }
@@ -94,19 +94,19 @@ class CustomerController extends Controller
                     $user->delete();
                     return response([
                         'error' => false,
-                        'message' => 'Vos données ont bien été supprimées.'
+                        'messages' => ['Vos données ont bien été supprimées.']
                     ]);
                 } else {
                     return response([
                         'error' => true,
-                        'message' => "Le mot de passe est incorrecte"
+                        'messages' => ['Le mot de passe est incorrecte.']
                     ]);
                 }
             }
         } else {
             return response([
                 'error' => true,
-                'message' => "Suppresion impossible, vous n'êtes pas connecté."
+                'messages' => ["Suppresion impossible, vous n'êtes pas connecté."]
             ]);
         }
     }

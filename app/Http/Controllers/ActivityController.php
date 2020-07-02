@@ -22,7 +22,11 @@ class ActivityController extends Controller
    */
   public function index()
   {
-    return Activity::with('subcategory')->with('professional')->with('tags')->get();
+    return response([
+      'error' => false,
+      'messages' => [''],
+      'activities' => Activity::with('subcategory')->with('professional')->with('tags')->get()
+    ]);
   }
 
   /**
@@ -35,10 +39,18 @@ class ActivityController extends Controller
     if ($activity && $user) {
       // Show state only if the user in not an customer
       if (!$user->isCustomer()) {
-        return $activity->load('state');
+        return response([
+          'error' => false,
+          'messages' => [''],
+          'activity' => $activity->load('state')
+        ]);
       } else {
         if (Activity::find($id)->isAccepted()) {
-          return $activity;
+          return response([
+            'error' => false,
+            'messages' => [''],
+            'activity' => $activity
+          ]);
         } else {
           return response([
             'error' => true,
@@ -85,8 +97,8 @@ class ActivityController extends Controller
     // Send errors if the validator failed
     if ($validator->fails()) {
       return response([
-        "error" => true,
-        "messages" => $validator->messages()
+        'error' => true,
+        'messages' => $validator->messages()
       ]);
     } else {
       // Check if SIREN exists
@@ -95,8 +107,8 @@ class ActivityController extends Controller
       $response = Http::get($url . $request->input('siren'));
       if ($response->status() == 404) {
         return response([
-          "error" => true,
-          "messages" => "Le numéro de Siren saisie n'est pas valide."
+          'error' => true,
+          'messages' => "Le numéro de Siren saisie n'est pas valide."
         ]);
       } else {
         // Create activity
@@ -110,8 +122,8 @@ class ActivityController extends Controller
 
         if (!$activity_with_relations) {
           return response([
-            "error" => true,
-            "messages" => ["Une erreur est survenue lors de la création des relations."]
+            'error' => true,
+            'messages' => ['Une erreur est survenue lors de la création des relations.']
           ]);
         } else {
           $activity = $activity_with_relations;
@@ -119,14 +131,14 @@ class ActivityController extends Controller
 
         if ($activity->save()) {
           return response([
-            "error" => false,
-            "message" => "Activité créée.",
-            "activity" => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
+            'error' => false,
+            'messages' => ['Activité créée.'],
+            'activity' => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
           ]);
         } else {
           return response([
-            "error" => true,
-            "messages" => ["Une erreur est survenue lors de la création de l'activité."]
+            'error' => true,
+            'messages' => ["Une erreur est survenue lors de la création de l'activité."]
           ]);
         }
       }
@@ -162,8 +174,8 @@ class ActivityController extends Controller
     // Send errors if the validator failed
     if ($validator->fails()) {
       return response([
-        "error" => true,
-        "messages" => $validator->messages()
+        'error' => true,
+        'messages' => $validator->messages()
       ]);
     } else {
       // Check if the Activity exists
@@ -182,8 +194,8 @@ class ActivityController extends Controller
       $activity_with_relations = $this->updateRelations($activity, $request);
       if (!$activity_with_relations) {
         return response([
-          "error" => true,
-          "messages" => ["Une erreur est survenue lors de la mise à jour des relations."]
+          'error' => true,
+          'messages' => ['Une erreur est survenue lors de la mise à jour des relations.']
         ]);
       } else {
         $activity = $activity_with_relations;
@@ -191,14 +203,14 @@ class ActivityController extends Controller
 
       if ($activity->save()) {
         return response([
-          "error" => false,
-          "message" => "Activité mise à jour.",
-          "activity" => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
+          'error' => false,
+          'messages' => ['Activité mise à jour.'],
+          'activity' => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
         ]);
       } else {
         return response([
-          "error" => true,
-          "messages" => ["Une erreur est survenue lors de la création de l'activité."]
+          'error' => true,
+          'messages' => ["Une erreur est survenue lors de la création de l'activité."]
         ]);
       }
     }
@@ -239,9 +251,9 @@ class ActivityController extends Controller
       $activity->state_id = State::where('label', 'Pending')->first()->id;
       $activity->save();
       return response([
-        "error" => false,
-        "message" => "État modifié.",
-        "activity" => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
+        'error' => false,
+        'messages' => ['État modifié.'],
+        'activity' => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
       ]);
     } else {
       return response([
@@ -268,14 +280,14 @@ class ActivityController extends Controller
         $activity->state_id = State::where('label', $new_state_label)->first()->id;
         $activity->save();
         return response([
-          "error" => false,
-          "message" => "État modifié.",
-          "activity" => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
+          'error' => false,
+          'messages' => ['État modifié.'],
+          'activity' => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
         ]);
       } else {
         return response([
-          "error" => true,
-          "messages" => ["Vous ne pouvez approuver uniquement une activité qui est à l'état '" . $error_msg . "'."]
+          'error' => true,
+          'messages' => ["Vous ne pouvez approuver uniquement une activité qui est à l'état '" . $error_msg . "'."]
         ]);
       }
     } else {
@@ -314,14 +326,14 @@ class ActivityController extends Controller
         return $activity;
       } else {
         return response([
-          "error" => true,
-          "messages" => ["L'adresse saisie n'existe pas."]
+          'error' => true,
+          'messages' => ["L'adresse saisie n'existe pas."]
         ]);
       }
     } else {
       return response([
-        "error" => true,
-        "messages" => ["L'adresse saisie n'existe pas."]
+        'error' => true,
+        'messages' => ["L'adresse saisie n'existe pas."]
       ]);
     }
   }

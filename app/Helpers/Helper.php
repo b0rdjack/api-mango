@@ -40,7 +40,7 @@ class Helper
       if (!Auth::attempt($credentials)) {
         return response([
           'error' => true,
-          'messages' => 'Invalid Credentials'
+          'messages' => ['Invalid Credentials.']
         ]);
       } else {
         $user = Auth::user();
@@ -57,7 +57,7 @@ class Helper
         } else {
           return response([
             'error' => true,
-            'messages' => 'Forbidden'
+            'messages' => ['Forbidden.']
           ], 403);
         }
       }

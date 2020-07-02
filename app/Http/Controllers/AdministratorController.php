@@ -52,6 +52,7 @@ class AdministratorController extends Controller
                     ];
                     return response([
                         'error' => false,
+                        'messages' => [''],
                         'user' => $response,
                         'access_token' => $accessToken,
                         'token_type' => 'Bearer'
@@ -59,7 +60,7 @@ class AdministratorController extends Controller
                 } else {
                     return response([
                         'error' => true,
-                        'messages' => 'Forbidden'
+                        'messages' => ['Forbidden']
                     ], 403);
                 }
             }

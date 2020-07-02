@@ -27,8 +27,8 @@ class Professional extends Controller
             ]);
             if ($validator->fails()) {
                 return response([
-                    "error" => true,
-                    "messages" => $validator->messages()
+                    'error' => true,
+                    'messages' => $validator->messages()
                 ]);
             } else {
                 $user = Auth::user();
@@ -38,19 +38,19 @@ class Professional extends Controller
                     $user->delete();
                     return response([
                         'error' => false,
-                        'message' => 'Vos données ont bien été supprimées.'
+                        'messages' => ['Vos données ont bien été supprimées.']
                     ]);
                 } else {
                     return response([
                         'error' => true,
-                        'message' => "Le mot de passe est incorrecte"
+                        'messages' => ['Le mot de passe est incorrecte.']
                     ]);
                 }
             }
         } else {
             return response([
                 'error' => true,
-                'message' => "Suppresion impossible, vous n'êtes pas connecté."
+                'messages' => "Suppresion impossible, vous n'êtes pas connecté."
             ]);
         }
     }

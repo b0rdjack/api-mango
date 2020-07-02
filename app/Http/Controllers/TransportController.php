@@ -7,6 +7,10 @@ use App\Transport;
 class TransportController extends Controller {
 
   public function index() {
-    return Transport::all();
+    return request([
+      'error' => false,
+      'messages' => [''],
+      'transports' => Transport::all()
+    ]);
   }
 }

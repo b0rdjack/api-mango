@@ -6,6 +6,10 @@ use App\Category;
 
 class CategoryController extends Controller {
   public function index() {
-    return Category::with('subCategories')->get();
+    return response([
+      'error' => false,
+      'messages' => [''],
+      'categories' => Category::with('subCategories')->get()
+    ]);
   }
 }

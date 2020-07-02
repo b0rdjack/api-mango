@@ -20,7 +20,7 @@ class Role
         if (!Auth::check()) {
             return response([
                 'error' => true,
-                'message' => 'Veuillez vous connecter pour accéder à ces informations.'
+                'messages' => ['Veuillez vous connecter pour accéder à ces informations.']
             ]);
         } else {
             $user = Auth::user();
@@ -32,7 +32,7 @@ class Role
         }
         return response([
             'error' => true,
-            'message' => 'Veuillez vous connecter pour accéder à ces informations.'
+            'messages' => ['Veuillez vous connecter pour accéder à ces informations.']
         ]);
     }
 }

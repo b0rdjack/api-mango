@@ -30,16 +30,16 @@ class PasswordResetController extends Controller
     // Send errors if the parameter fails to validate
     if ($validateData->fails()) {
       return response([
-        "error" => true,
-        "messages" => $validateData->messages()
+        'error' => true,
+        'messages' => $validateData->messages()
       ]);
     } else {
       // Check if the user exists
       $user = User::where('email', $request->email)->first();
       if (!$user) {
         return response([
-          "error" => true,
-          "messages" => "Invalid credentials"
+          'error' => true,
+          'messages' => ["Invalid credentials."]
         ]);
       } else {
         // Check if the user isn't an administrator
@@ -60,12 +60,12 @@ class PasswordResetController extends Controller
 
           return response([
             'error' => false,
-            'message' => 'Un lien de réinitialisation a été envoyé par mail !'
+            'messages' => ['Un lien de réinitialisation a été envoyé par mail !']
           ]);
         } else {
           return response([
             'error' => false,
-            'message' => "Vous n'avez pas l'autorisation de changer votre mot de passe."
+            'messages' => ["Vous n'avez pas l'autorisation de changer votre mot de passe."]
           ]);
         }
       }
@@ -121,7 +121,7 @@ class PasswordResetController extends Controller
       }
       // Check if the token is still valid
       elseif (Carbon::parse($passwordReset->updated_at)->addMinutes(15)->isPast()) {
-        return view('reset_password_validation')->withModified(false)->withMessage("Ce lien a expiré.");
+        return view('reset_password_validation')->withModified(false)->withMessage('Ce lien a expiré.');
       } else {
         // Check if the user exists
         $user = User::where('email', $passwordReset->email)->first();

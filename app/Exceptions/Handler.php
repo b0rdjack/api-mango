@@ -54,7 +54,7 @@ class Handler extends ExceptionHandler
         if ($exception instanceof AuthenticationException) {
             return response([
                 'error' => true,
-                'message' => "Vous n'êtes pas connecté."
+                'messages' => ["Vous n'êtes pas connecté."]
             ]);
         }
         return parent::render($request, $exception);

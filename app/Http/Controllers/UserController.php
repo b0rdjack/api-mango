@@ -36,12 +36,12 @@ class UserController extends Controller
       Auth::user()->token()->revoke();
       return response([
         'error' => false,
-        'message' => 'Vous avez bien été déconnecté'
+        'messages' => ['Vous avez bien été déconnecté']
       ]);
     } else {
       return response([
         'error' => true,
-        'message' => "Déconnexion impossible, vous n'êtes pas connecté."
+        'messages' => ["Déconnexion impossible, vous n'êtes pas connecté."]
       ]);
     }
   }
