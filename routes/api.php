@@ -58,4 +58,8 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/activities/{id}/pend', 'ActivityController@pend')->middleware('role:administrator');
 
 
+    /**
+     * ============================================= Search =============================================
+     */
+    Route::get('/search', 'SearchController@search')->middleware('role:customer');
 });

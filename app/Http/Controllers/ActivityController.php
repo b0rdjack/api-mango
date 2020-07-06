@@ -326,7 +326,7 @@ class ActivityController extends Controller
   private function checkAddress($activity, $request_addr, $request_pcode)
   {
     // Get the url from the constant file
-    $url = Config::get('constants.API.Adress');
+    $url = Config::get('constants.API.Adresse.search');
     // Prepare the parameters (Doc: https://geo.api.gouv.fr/adresse)
     $parameters = str_replace(' ', '+', $request_addr) . "&postcode=" . $request_pcode . "&limit=1";
     // Get the reponse in json
