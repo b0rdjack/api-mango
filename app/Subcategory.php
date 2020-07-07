@@ -16,4 +16,9 @@ class Subcategory extends Model
     public function activities(){
         return $this->belongsToMany('App\Activity');
     }
+
+    public function isRestauration(){
+        $category = Category::where('label', 'Restauration')->first();
+        return $this->categories->contains($category);
+    }
 }

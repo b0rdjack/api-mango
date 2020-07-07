@@ -57,32 +57,4 @@ class Activity extends Model
         $state_id = State::where('label', 'Accepted')->first()->id;
         return $this->state_id === $state_id;
     }
-
-    public function scopeByPostalCode($query, $postal_code_id)
-    {
-        return $query->where('postal_code_id', $postal_code_id);
-    }
-
-    public function scopeByAverageTimeSpent($query, $min_duration, $max_duration)
-    {
-        return $query->whereBetween('average_time_spent', [$min_duration, $max_duration]);
-    }
-
-    public function scopeByPrice($query, $amount)
-    {
-        return $query->prices->where('amount', '<=', $amount);
-    }
-
-    public function scopeByTransport($query, $transport_id)
-    {
-        return $query->where('transport_id', $transport_id);
-    }
-
-    public function scopeByTags($query, $tags)
-    {
-        return $query->whereHas('tags', function ($q) use ($tags) {
-            $q->whereIn('tag.id', $tags);
-            return $q;
-        });
-    }
 }
