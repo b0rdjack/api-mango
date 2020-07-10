@@ -44,6 +44,11 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/categories', 'CategoryController@index')->middleware('role:customer');
 
     /**
+     * ============================================= Filter =============================================
+     */
+    Route::get('/filters', 'FilterController@index')->middleware('role:customer');
+
+    /**
      * ============================================= Activity =============================================
      */
     Route::get('/activities', 'ActivityController@index')->middleware('role:administrator');
