@@ -61,7 +61,7 @@ class CustomerController extends Controller
 
             return response([
                 'error' => false,
-                'messages' => ['Veuillez confirmer votre compte.']
+                'messages' => ["Un mail viens d'être envoyé à l'adresse e-mail suivante: ".$request->email]
             ]);
         }
     }
