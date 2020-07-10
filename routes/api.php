@@ -16,9 +16,9 @@ use Illuminate\Support\Facades\Route;
 /**
  * ============================================= Login and Register =============================================
  */
-Route::get('admin', 'AdministratorController@login');
-Route::post('customer', 'CustomerController@register');
-Route::get('customer', 'CustomerController@login');
+Route::post('admin', 'AdministratorController@login');
+Route::post('customer/register', 'CustomerController@register');
+Route::post('customer', 'CustomerController@login');
 Route::post('reset_password', 'PasswordResetController@create');
 
 /**
@@ -61,5 +61,5 @@ Route::group(['middleware' => 'auth:api'], function () {
     /**
      * ============================================= Search =============================================
      */
-    Route::get('/search', 'SearchController@search')->middleware('role:customer');
+    Route::post('/search', 'SearchController@search')->middleware('role:customer');
 });
