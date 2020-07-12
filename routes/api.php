@@ -31,6 +31,8 @@ Route::group(['middleware' => 'auth:api'], function () {
      */
     Route::post('/user/logout', 'UserController@logout')->middleware('role:customer,professional,admin');
     Route::delete('/customer', 'CustomerController@delete')->middleware('role:customer');
+    Route::get('/customer', 'CustomerController@show')->middleware(('role:customer'));
+
     Route::delete('/professional', 'ProfessionalController@delete')->middleware('role:professional');
 
     /**

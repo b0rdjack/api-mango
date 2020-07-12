@@ -61,7 +61,7 @@ class CustomerController extends Controller
 
             return response([
                 'error' => false,
-                'messages' => ["Un mail viens d'être envoyé à l'adresse e-mail suivante: ".$request->email]
+                'messages' => ["Un mail viens d'être envoyé à l'adresse e-mail suivante: " . $request->email]
             ]);
         }
     }
@@ -71,6 +71,21 @@ class CustomerController extends Controller
         return Helper::login($request, 'customer');
     }
 
+    public function show(Request $request)
+    {
+        if (Auth::check()) {
+            $user = Auth::user();
+            return response([
+                'error' => false,
+                'user' => $user
+            ]);
+        } else {
+            return response([
+                'error' => true,
+                'messages' => ["Vous n'êtes pas connecté."]
+            ]);
+        }
+    }
     /**
      * Delete a customer (SoftDelete)
      */
