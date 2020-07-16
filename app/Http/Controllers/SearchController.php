@@ -63,7 +63,7 @@ class SearchController extends Controller
         $activities = $this->getActivitiesByFilters($state_id, $postal_code_id, $subcategories, $amount, $tags);
 
         // Filter the activities according the time the user has
-        $activities = $this->filterByTime($activities, $duration, $this->checkRestauration($subcategories));
+        $activities = $this->filterAll($activities, $duration, $this->checkRestauration($subcategories), $amount);
 
         $journeys = [];
 
@@ -147,11 +147,11 @@ class SearchController extends Controller
   /**
    * Filter activity by time
    */
-  private function filterByTime($activities, $duration, $restaurant)
+  private function filterAll($activities, $duration, $restaurant, $amount_max)
   {
     $sum = 0;
     $i = 0;
-
+    $amount = 0;
     // Shuffle the activites
     $tmp_activities = $activities->shuffle();
     $activities = collect();
@@ -162,10 +162,11 @@ class SearchController extends Controller
     // Check if the user asked for a restaurant
     if ($restaurant) {
       // Get a random restaurant
-      $activity = $this->getRandomlyRestaurant($tmp_activities);
+      $activity = $this->getRandomlyRestaurant($tmp_activities, $amount_max);
       // Add the restaurant in the first position of the activites array
       if ($activity) {
         $sum = $activity->average_time_spent;
+        $amount = $activity->prices()->first()->amount;
         $activities->push($activity);
 
         // Remove all the activities which has the Restauration category from the activites array, so it cannot be chosen again
@@ -181,8 +182,9 @@ class SearchController extends Controller
     while (($sum < $duration) && ($i < count($tmp_activities))) {
       $current_activity = $tmp_activities[$i];
       // Check if the activity is open AND if it's not closed and won't be after spending time in the previous activities
-      if (($now > $current_activity->opening_hours) && ($now < $current_activity->closing_hours + $sum)) {
+      if (($now > $current_activity->opening_hours) && ($now < $current_activity->closing_hours + $sum) && ($amount_max >= $current_activity->prices()->first()->amount + $amount)) {
         // Add the average time spent in a activity to the sum
+        $amount += $current_activity->prices()->first()->amount;
         $sum += $current_activity->average_time_spent;
         $activities->push($current_activity);
       }
@@ -196,7 +198,7 @@ class SearchController extends Controller
   /**
    * Get a random activity with the Restauration category
    */
-  private function getRandomlyRestaurant($activities)
+  private function getRandomlyRestaurant($activities, $amount_max)
   {
     // Get current time in secondes
     $now = $this->convertTimeToSecond(Carbon::now()->toTimeString());
@@ -204,7 +206,7 @@ class SearchController extends Controller
     // Iterate through each activity
     foreach ($activities as $activity) {
       // If the activiy is a Restauration category AND it's open AND not closed
-      if (($activity->subcategory->isRestauration()) && ($activity->opening_hours < $now) && ($activity->closing_hours > $now)) {
+      if (($activity->subcategory->isRestauration()) && ($activity->opening_hours < $now) && ($activity->closing_hours > $now) && ($activity->prices()->first()->amount <= $amount_max)) {
         return $activity;
       }
     }
