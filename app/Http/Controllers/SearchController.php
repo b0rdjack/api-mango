@@ -181,7 +181,7 @@ class SearchController extends Controller
     // Add all the other activities according the time left for the user.
     while (($sum < $duration) && ($i < count($tmp_activities))) {
       $current_activity = $tmp_activities[$i];
-      // Check if the activity is open AND if it's not closed and won't be after spending time in the previous activities
+      // Check if the activity is open AND if it's not closed and won't be after spending time in the previous activities AND the amount of the activity added to previous ones won't exceed the user's max
       if (($now > $current_activity->opening_hours) && ($now < $current_activity->closing_hours + $sum) && ($amount_max >= $current_activity->prices()->first()->amount + $amount)) {
         // Add the average time spent in a activity to the sum
         $amount += $current_activity->prices()->first()->amount;
@@ -205,7 +205,7 @@ class SearchController extends Controller
 
     // Iterate through each activity
     foreach ($activities as $activity) {
-      // If the activiy is a Restauration category AND it's open AND not closed
+      // If the activiy is a Restauration category AND it's open AND not closed AND the amount is less than the user's max
       if (($activity->subcategory->isRestauration()) && ($activity->opening_hours < $now) && ($activity->closing_hours > $now) && ($activity->prices()->first()->amount <= $amount_max)) {
         return $activity;
       }
