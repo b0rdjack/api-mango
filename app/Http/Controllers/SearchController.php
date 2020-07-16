@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Activity;
 use App\Postal_code;
+use App\State;
 use App\Subcategory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -57,9 +58,9 @@ class SearchController extends Controller
         $duration = $request->input('duration');
         $amount = $request->input('amount');
         $tags = $request->input('tags.*.id');
-
+        $state_id = State::where('label', 'Accepted')->first()->id;
         // Get all the activities according the filters
-        $activities = $this->getActivitiesByFilters($postal_code_id, $subcategories, $amount, $tags);
+        $activities = $this->getActivitiesByFilters($state_id, $postal_code_id, $subcategories, $amount, $tags);
 
         // Filter the activities according the time the user has
         $activities = $this->filterByTime($activities, $duration, $this->checkRestauration($subcategories));
@@ -116,9 +117,10 @@ class SearchController extends Controller
   /**
    * Get activities according the filters
    */
-  private function getActivitiesByFilters($postal_code_id, $subcategories, $amount, $tags)
+  private function getActivitiesByFilters($state_id, $postal_code_id, $subcategories, $amount, $tags)
   {
-    return Activity::where('postal_code_id', $postal_code_id)
+    return Activity::where('state_id', $state_id)
+      ->where('postal_code_id', $postal_code_id)
       ->whereHas('subcategory', function ($query) use ($subcategories) {
         return $query->whereIn('subcategories.id', $subcategories);
       })
