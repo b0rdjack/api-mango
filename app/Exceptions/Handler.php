@@ -51,11 +51,8 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
-        if ($exception instanceof AuthenticationException) {
-            return response([
-                'error' => true,
-                'messages' => ["Vous n'êtes pas connecté."]
-            ]);
+        if ($request->expectsJson()) {
+            return response()->json(['error' => 'true', 'messages' => ["Vous n'êtes pas connecté"]], 401);
         }
         return parent::render($request, $exception);
     }
