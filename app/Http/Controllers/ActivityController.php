@@ -25,7 +25,7 @@ class ActivityController extends Controller
     return response([
       'error' => false,
       'messages' => [''],
-      'activities' => Activity::with('subcategory')->with('professional')->with('tags')->get()
+      'activities' => Activity::with('professional')->with('tags')->with('subcategory')->with('state')->with('postal_code')->get()
     ]);
   }
 
