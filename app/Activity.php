@@ -9,7 +9,7 @@ class Activity extends Model
 {
     use SoftDeletes;
     protected $fillable = ['name', 'address', 'siren', 'phone_number', 'longitude', 'latitude', 'opening_hours', 'closing_hours', 'average_time_spent', 'disabled_access'];
-    protected $hidden = ['created_at', 'updated_at', 'pivot', 'siren', 'postal_code_id', 'professional_id', 'subcategory_id', 'state_id', 'quantity_id', 'deleted_at'];
+    protected $hidden = ['created_at', 'updated_at', 'pivot', 'postal_code_id', 'professional_id', 'subcategory_id', 'state_id', 'quantity_id', 'deleted_at'];
 
     // Relations
 
