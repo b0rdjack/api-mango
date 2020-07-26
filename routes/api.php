@@ -29,11 +29,12 @@ Route::group(['middleware' => 'auth:api'], function () {
     /**
      * ============================================= Account =============================================
      */
-    Route::post('/user/logout', 'UserController@logout')->middleware('role:customer,professional,admin');
+    Route::post('/user/logout', 'UserController@logout')->middleware('role:administrator,customer,professional');
     Route::delete('/customer', 'CustomerController@delete')->middleware('role:customer');
     Route::get('/customer', 'CustomerController@show')->middleware(('role:customer'));
 
     Route::delete('/professional', 'ProfessionalController@delete')->middleware('role:professional');
+    Route::get('/professional/{id}', 'ProfessionalController@show')->middleware('role:administrator, professional');
 
     /**
      * ============================================= Transport =============================================
@@ -43,7 +44,17 @@ Route::group(['middleware' => 'auth:api'], function () {
     /**
      * ============================================= Category =============================================
      */
-    Route::get('/categories', 'CategoryController@index')->middleware('role:customer');
+    Route::get('/categories', 'CategoryController@index')->middleware('role:administrator, customer');
+
+    /**
+     * ============================================= Postal Code ==========================================
+     */
+    Route::get('/postal_codes', 'PostalCodeController@index')->middleware('role:administrator, professional');
+
+    /**
+     * ============================================= Option =============================================
+     */
+    Route::get('/options', 'OptionController@index')->middleware('role:administrator');
 
     /**
      * ============================================= Filter =============================================
