@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Professional;
 use App\Helpers\Helper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -51,6 +52,31 @@ class Professional extends Controller
             return response([
                 'error' => true,
                 'messages' => "Suppresion impossible, vous n'êtes pas connecté."
+            ]);
+        }
+    }
+
+    public function show($id)
+    {
+        $professional  = Professional::with('user')->find($id);
+        $user = Auth::user();
+        if ($professional && $user) {
+            if (!$user->isCustomer()) {
+                return response([
+                    'error' => false,
+                    'messages' => [''],
+                    'professional' => $professional->load('state')
+                ]);
+            } else {
+                return response([
+                    'error' => true,
+                    'messages' => ["L'activité demandé n'a pas encore été accepté"]
+                ]);
+            }
+        } else {
+            return response([
+                'error' => true,
+                'messsages' => ["Ce compte n'existe pas"]
             ]);
         }
     }
