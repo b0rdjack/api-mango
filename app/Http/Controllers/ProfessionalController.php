@@ -70,7 +70,7 @@ class Professional extends Controller
             } else {
                 return response([
                     'error' => true,
-                    'messages' => ["L'activité demandé n'a pas encore été accepté"]
+                    'messages' => ["Le professionel demandé n'a pas encore été accepté"]
                 ]);
             }
         } else {
