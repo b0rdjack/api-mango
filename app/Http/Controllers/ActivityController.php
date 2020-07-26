@@ -34,7 +34,7 @@ class ActivityController extends Controller
    */
   public function show($id)
   {
-    $activity = Activity::with('postal_code')->with('subcategory')->with('professional')->with('tags')->with('prices')->with('prices.quantity')->find($id);
+    $activity = Activity::with('professional.user')->with('tags')->with('subcategory')->with('state')->with('postal_code')->with('prices')->with('prices.quantity')->find($id);
     $user = Auth::user();
     if ($activity && $user) {
       // Show state only if the user in not an customer
@@ -42,21 +42,14 @@ class ActivityController extends Controller
         return response([
           'error' => false,
           'messages' => [''],
-          'activity' => $activity->load('state')
+          'activity' => $activity
         ]);
       } else {
-        if (Activity::find($id)->isAccepted()) {
-          return response([
-            'error' => false,
-            'messages' => [''],
-            'activity' => $activity
-          ]);
-        } else {
-          return response([
-            'error' => true,
-            'messages' => ["L'activité demandé n'a pas encore été accepté"]
-          ]);
-        }
+        return response([
+          'error' => false,
+          'messages' => [''],
+          'activity' => $activity
+        ]);
       }
     } else {
       return response([
@@ -87,11 +80,11 @@ class ActivityController extends Controller
       'postal_code.id' => 'exists:postal_codes,id|required',
       'professional.id' => 'exists:professionals,id',
       'state.id' => 'exists:states,id|required',
-      'quantity.id' => 'exists:quantities,id|required',
-      'price.amount' => [
+      'prices.*.amount' => [
         'required',
         'regex:/^\d+(\.\d{1,2})?$/'
-      ]
+      ],
+      'prices.*.quantity.id' => 'exists:quantities,id|required'
     ]);
 
     // Send errors if the validator failed
@@ -112,7 +105,7 @@ class ActivityController extends Controller
         ]);
       } else {
         // Create activity
-        $activity = new Activity($request->except(['address', 'postal_code', 'subcategory', 'tags', 'quantity', 'price']));
+        $activity = new Activity($request->except(['address', 'postal_code', 'subcategory', 'tags', 'prices']));
 
         //Process to check address
         $activity = $this->checkAddress($activity, $request->input('address'), $request->input('postal_code.code'));
@@ -127,19 +120,18 @@ class ActivityController extends Controller
           ]);
         } else {
           $activity = $activity_with_relations;
-        }
-
-        if ($activity->save()) {
-          return response([
-            'error' => false,
-            'messages' => ['Activité créée.'],
-            'activity' => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
-          ]);
-        } else {
-          return response([
-            'error' => true,
-            'messages' => ["Une erreur est survenue lors de la création de l'activité."]
-          ]);
+          if ($activity->save()) {
+            return response([
+              'error' => false,
+              'messages' => ['Activité créée.'],
+              'activity' => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
+            ]);
+          } else {
+            return response([
+              'error' => true,
+              'messages' => ["Une erreur est survenue lors de la création de l'activité."]
+            ]);
+          }
         }
       }
     }
@@ -164,11 +156,10 @@ class ActivityController extends Controller
       'tags.*.id' => 'exists:tags,id',
       'postal_code.id' => 'exists:postal_code,id',
       'state.id' => 'exists:states,id',
-      'quantity.id' => 'exists:quantities,id',
-      'price.amount' => [
-        'required',
+      'prices.*.amount' => [
         'regex:/^\d+(\.\d{1,2})?$/'
-      ]
+      ],
+      'prices.*.quantity.id' => 'exists:quantities,id'
     ]);
 
     // Send errors if the validator failed
@@ -183,7 +174,7 @@ class ActivityController extends Controller
       if (Activity::find($id)) {
         // Not updating relationships here
         // Escaping address, city and postal_code because it implies another process to check adresse which is done later
-        $activity->update($request->except(['address', 'postal_code', 'subcategory', 'tags']));
+        $activity->update($request->except(['address', 'postal_code', 'subcategory', 'tags', 'prices']));
       }
       // Process to check address
       if ($request->has(['address', 'postal_code'])) {
@@ -381,8 +372,8 @@ class ActivityController extends Controller
 
     if (!$activity->save()) return false;
 
-    $price = $this->createPrice($request->input('price.amount'), $activity->id, $request->input('quantity.id'));
-    if (!$price) return false;
+    $prices = $this->createPrices($request->input('prices'), $activity->id);
+    if (!$prices) return false;
 
     // Create tags relation
     $tags = $request->input('tags');
@@ -416,7 +407,7 @@ class ActivityController extends Controller
     }
 
     //Update price
-    if ($request->has('quantity') && $request->has('price')) {
+    if ($request->has('quantity') && $request->has('prices')) {
 
       // Delete old price
       foreach ($activity->prices() as $price) {
@@ -424,8 +415,8 @@ class ActivityController extends Controller
       }
 
       // Create new price
-      $price = $this->createPrice($request->input('price.amount'), $activity->id, $request->input('quantity.id'));
-      if (!$price) return false;
+      $prices = $this->createPrices($request->input('prices'), $activity->id);
+      if (!$prices) return false;
     }
 
 
@@ -445,13 +436,17 @@ class ActivityController extends Controller
     return ($activity->save()) ? $activity : false;
   }
 
-  private function createPrice($amount, $activity_id, $quantity_id)
+  private function createPrices($prices, $activity_id)
   {
-    $price = new Price([
-      'amount' => $amount
-    ]);
-    $price->activity_id = $activity_id;
-    $price->quantity_id = $quantity_id;
-    return ($price->save()) ? $price : false;
+
+    foreach ($prices as $price) {
+      $new_price = new Price([
+        'amount' => $price['amount']
+      ]);
+      $new_price->activity_id = $activity_id;
+      $new_price->quantity_id = $price['quantity']['id'];
+      if (!$new_price->save()) return false;
+    }
+    return true;
   }
 }
