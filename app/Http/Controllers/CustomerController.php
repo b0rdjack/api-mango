@@ -125,4 +125,13 @@ class CustomerController extends Controller
             ]);
         }
     }
+
+    public function index()
+    {
+        return response([
+            'error' => false,
+            'messages' => [''],
+            'customers' => Customer::with('user')->get()
+        ]);
+    }
 }

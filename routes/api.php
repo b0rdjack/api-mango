@@ -32,7 +32,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/user/logout', 'UserController@logout')->middleware('role:administrator,customer,professional');
     Route::delete('/customer', 'CustomerController@delete')->middleware('role:customer');
     Route::get('/customer', 'CustomerController@show')->middleware(('role:customer'));
-
+    Route::get('/customers', 'CustomerController@index')->middleware(('role:administrator'));
     Route::delete('/professional', 'ProfessionalController@delete')->middleware('role:professional');
     Route::get('/professional/{id}', 'ProfessionalController@show')->middleware('role:administrator, professional');
 
