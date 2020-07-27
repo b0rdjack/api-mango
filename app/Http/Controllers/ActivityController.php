@@ -142,7 +142,6 @@ class ActivityController extends Controller
    */
   public function update(Request $request, $id)
   {
-
     // Validate parameters
     $validator = Validator::make($request->all(), [
       'name' => 'string|max:55',
@@ -154,7 +153,7 @@ class ActivityController extends Controller
       'disabled_access' => 'boolean',
       'subcategory.id' => 'exists:subcategories,id',
       'tags.*.id' => 'exists:tags,id',
-      'postal_code.id' => 'exists:postal_code,id',
+      'postal_code.id' => 'exists:postal_codes,id',
       'state.id' => 'exists:states,id',
       'prices.*.amount' => [
         'regex:/^\d+(\.\d{1,2})?$/'
@@ -407,10 +406,9 @@ class ActivityController extends Controller
     }
 
     //Update price
-    if ($request->has('quantity') && $request->has('prices')) {
-
+    if ($request->has('prices')) {
       // Delete old price
-      foreach ($activity->prices() as $price) {
+      foreach ($activity->prices as $price) {
         $price->delete();
       }
 
