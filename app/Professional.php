@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Professional extends Model
 {
+    protected $fillable = ['user_id'];
+
     public function activites()
     {
         return $this->hasMany('App\Activity');
@@ -13,6 +15,6 @@ class Professional extends Model
 
     public function user()
     {
-        return $this->hasOne('App/User');
+        return $this->belongsTo('App\User');
     }
 }

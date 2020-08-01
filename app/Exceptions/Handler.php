@@ -52,7 +52,7 @@ class Handler extends ExceptionHandler
     public function render($request, Throwable $exception)
     {
         if ($request->expectsJson()) {
-            return response()->json(['error' => 'true', 'messages' => ["Vous n'êtes pas connecté"]], 401);
+            return response()->json(['error' => 'true', 'messages' => ["Erreur interne, veuillez réessayer ultérieurement."]], 401);
         }
         return parent::render($request, $exception);
     }

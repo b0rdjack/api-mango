@@ -20,6 +20,8 @@ Route::post('admin', 'AdministratorController@login');
 Route::post('customer/register', 'CustomerController@register');
 Route::post('customer', 'CustomerController@login');
 Route::post('reset_password', 'PasswordResetController@create');
+Route::post('professional', 'ProfessionalController@login');
+Route::post('professional/register', 'ProfessionalController@register');
 
 /**
  * Logged routes
