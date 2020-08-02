@@ -36,7 +36,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/customer', 'CustomerController@show')->middleware(('role:customer'));
     Route::get('/customers', 'CustomerController@index')->middleware(('role:administrator'));
     Route::delete('/professional', 'ProfessionalController@delete')->middleware('role:professional');
-    Route::get('/professional/{id}', 'ProfessionalController@show')->middleware('role:administrator, professional');
+    Route::get('/professional', 'ProfessionalController@show')->middleware('role:administrator,professional');
 
     /**
      * ============================================= Transport =============================================
@@ -46,12 +46,12 @@ Route::group(['middleware' => 'auth:api'], function () {
     /**
      * ============================================= Category =============================================
      */
-    Route::get('/categories', 'CategoryController@index')->middleware('role:administrator, customer');
+    Route::get('/categories', 'CategoryController@index')->middleware('role:administrator,customer');
 
     /**
      * ============================================= Postal Code ==========================================
      */
-    Route::get('/postal_codes', 'PostalCodeController@index')->middleware('role:administrator, professional');
+    Route::get('/postal_codes', 'PostalCodeController@index')->middleware('role:administrator,professional');
 
     /**
      * ============================================= Option =============================================

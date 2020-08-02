@@ -73,18 +73,7 @@ class CustomerController extends Controller
 
     public function show(Request $request)
     {
-        if (Auth::check()) {
-            $user = Auth::user();
-            return response([
-                'error' => false,
-                'user' => $user
-            ]);
-        } else {
-            return response([
-                'error' => true,
-                'messages' => ["Vous n'êtes pas connecté."]
-            ]);
-        }
+        return Helper::show();
     }
     /**
      * Delete a customer (SoftDelete)

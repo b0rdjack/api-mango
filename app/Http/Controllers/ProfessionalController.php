@@ -71,7 +71,7 @@ class ProfessionalController extends Controller
              */
 
             // Instanciate the Stripe object
-            $stripe = new Stripe();
+            $stripe = new Stripe("");
 
             // Create the Stripe customer
             $stripe_customer = $stripe->customers()->create([
@@ -146,6 +146,13 @@ class ProfessionalController extends Controller
                 $user = Auth::user();
                 // Check if the password is the correct one
                 if (Hash::check($request->password, $user->password)) {
+                    $professional = Professional::where('user_id', $user->id)->first();
+
+                    // Delete stripe account
+                    $stripe = new Stripe("");
+                    $stripe->customers()->delete($professional->stripe_id);
+
+                    $professional->delete();
                     $user->token()->revoke();
                     $user->delete();
                     return response([
@@ -167,28 +174,8 @@ class ProfessionalController extends Controller
         }
     }
 
-    public function show($id)
+    public function show()
     {
-        $professional  = Professional::with('user')->find($id);
-        $user = Auth::user();
-        if ($professional && $user) {
-            if (!$user->isCustomer()) {
-                return response([
-                    'error' => false,
-                    'messages' => [''],
-                    'professional' => $professional->load('state')
-                ]);
-            } else {
-                return response([
-                    'error' => true,
-                    'messages' => ["Le professionel demandé n'a pas encore été accepté"]
-                ]);
-            }
-        } else {
-            return response([
-                'error' => true,
-                'messsages' => ["Ce compte n'existe pas"]
-            ]);
-        }
+        return Helper::show();
     }
 }

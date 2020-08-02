@@ -63,4 +63,23 @@ class Helper
       }
     }
   }
+
+  /**
+   * Show profil
+   */
+  public static function show()
+  {
+    if (Auth::check()) {
+      $user = Auth::user();
+      return response([
+        'error' => false,
+        'user' => $user
+      ]);
+    } else {
+      return response([
+        'error' => true,
+        'messages' => ["Vous n'êtes pas connecté."]
+      ]);
+    }
+  }
 }
