@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Activity;
 use App\Postal_code;
 use App\Price;
-use App\Quantity;
+use App\Professional;
 use App\State;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,10 +22,18 @@ class ActivityController extends Controller
    */
   public function index()
   {
+    $user = Auth::user();
+    $activity = collect();
+    if ($user->isProfessional()) {
+      $professional_id =  Professional::where('user_id', $user->id)->first()->id;
+      $activity = Activity::where('professional_id', $professional_id)->with('tags')->with('subcategory')->with('state')->with('postal_code')->get();
+    } else {
+      $activity = Activity::with('professional')->with('tags')->with('subcategory')->with('state')->with('postal_code')->get();
+    }
     return response([
       'error' => false,
       'messages' => [''],
-      'activities' => Activity::with('professional')->with('tags')->with('subcategory')->with('state')->with('postal_code')->get()
+      'activities' => $activity
     ]);
   }
 
@@ -78,8 +86,7 @@ class ActivityController extends Controller
       'subcategory.id' => 'exists:subcategories,id|required',
       'tags.*.id' => 'exists:tags,id|required',
       'postal_code.id' => 'exists:postal_codes,id|required',
-      'professional.id' => 'exists:professionals,id',
-      'state.id' => 'exists:states,id|required',
+      'state.id' => 'exists:states,id',
       'prices.*.amount' => [
         'required',
         'regex:/^\d+(\.\d{1,2})?$/'
@@ -109,28 +116,40 @@ class ActivityController extends Controller
 
         //Process to check address
         $activity = $this->checkAddress($activity, $request->input('address'), $request->input('postal_code.code'));
-
-        // Create relationships
-        $activity_with_relations = $this->createRelations($activity, $request);
-
-        if (!$activity_with_relations) {
+        if (!$activity) {
           return response([
             'error' => true,
-            'messages' => ['Une erreur est survenue lors de la création des relations.']
+            'messages' => ["L'adresse saisie n'existe pas."]
           ]);
         } else {
-          $activity = $activity_with_relations;
-          if ($activity->save()) {
-            return response([
-              'error' => false,
-              'messages' => ['Activité créée.'],
-              'activity' => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
-            ]);
-          } else {
+          // Create relationships
+          $activity_with_relations = $this->createRelations($activity, $request);
+
+          if (!$activity_with_relations) {
             return response([
               'error' => true,
-              'messages' => ["Une erreur est survenue lors de la création de l'activité."]
+              'messages' => ['Une erreur est survenue lors de la création des relations.']
             ]);
+          } else {
+            $activity = $activity_with_relations;
+
+            // Link the activity to the professional and set state
+            $user = Auth::user();
+            if ($user->isProfessional()) {
+              $activity->professional_id = Professional::where('user_id', $user->id)->first()->id;
+            }
+            if ($activity->save()) {
+              return response([
+                'error' => false,
+                'messages' => ['Activité créée.'],
+                'activity' => $activity->load('state')->load('postal_code')->load('subcategory')->load('professional')->load('tags')->load('prices')->load('prices.quantity'),
+              ]);
+            } else {
+              return response([
+                'error' => true,
+                'messages' => ["Une erreur est survenue lors de la création de l'activité."]
+              ]);
+            }
           }
         }
       }
@@ -335,16 +354,10 @@ class ActivityController extends Controller
         $activity->latitude = $coordinates[1];
         return $activity;
       } else {
-        return response([
-          'error' => true,
-          'messages' => ["L'adresse saisie n'existe pas."]
-        ]);
+        return null;
       }
     } else {
-      return response([
-        'error' => true,
-        'messages' => ["L'adresse saisie n'existe pas."]
-      ]);
+      return null;
     }
   }
 
