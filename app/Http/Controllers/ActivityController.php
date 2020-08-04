@@ -180,6 +180,9 @@ class ActivityController extends Controller
       'prices.*.quantity.id' => 'exists:quantities,id'
     ]);
 
+    //Remove SIREN just in case
+    $request->request->remove('siren');
+
     // Send errors if the validator failed
     if ($validator->fails()) {
       return response([
