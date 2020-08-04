@@ -406,8 +406,9 @@ class ActivityController extends Controller
    */
   private function updateRelations($activity, $request)
   {
-    // Update state
-    if ($request->has('state')) {
+    // Update state if it's an administrator
+    $administrator = Auth::user()->isAdministrator();
+    if ($administrator && $request->has('state')) {
       $activity->state_id = $request->input('state.id');
       if (!$activity->save()) return false;
     }
