@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Activity;
 use App\Professional;
 use App\Role;
 use App\User;
@@ -152,6 +153,15 @@ class ProfessionalController extends Controller
                     $stripe = new Stripe("");
                     $stripe->customers()->delete($professional->stripe_id);
 
+                    // Delete activites
+                    $activities = Activity::where('professional_id', $professional->id)->get();
+                    foreach ($activities as $activity) {
+                        $activity->delete();
+                    }
+
+                    // Delete user
+                    $professional->stripe_id = "";
+                    $professional->save();
                     $professional->delete();
                     $user->token()->revoke();
                     $user->delete();
