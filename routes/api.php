@@ -56,7 +56,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     /**
      * ============================================= Option =============================================
      */
-    Route::get('/options', 'OptionController@index')->middleware('role:administrator');
+    Route::get('/options', 'OptionController@index')->middleware('role:administrator,professional');
 
     /**
      * ============================================= Filter =============================================
@@ -66,10 +66,10 @@ Route::group(['middleware' => 'auth:api'], function () {
     /**
      * ============================================= Activity =============================================
      */
-    Route::get('/activities', 'ActivityController@index')->middleware('role:administrator');
-    Route::get('/activities/{id}', 'ActivityController@show')->middleware('role:administrator');
-    Route::put('/activities/{id}', 'ActivityController@update')->middleware('role:administrator');
-    Route::post('/activities', 'ActivityController@store')->middleware('role:administrator');
+    Route::get('/activities', 'ActivityController@index')->middleware('role:administrator,professional');
+    Route::get('/activities/{id}', 'ActivityController@show')->middleware('role:administrator,professional');
+    Route::put('/activities/{id}', 'ActivityController@update')->middleware('role:administrator,professional');
+    Route::post('/activities', 'ActivityController@store')->middleware('role:administrator,professional');
     Route::delete('/activities/{id}', 'ActivityController@delete')->middleware('role:administrator');
 
     // State
