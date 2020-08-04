@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Activity;
+use App\Notifications\ActivityState;
 use App\Postal_code;
 use App\Price;
 use App\Professional;
@@ -262,6 +263,10 @@ class ActivityController extends Controller
     if ($activity) {
       $activity->state_id = State::where('label', 'Pending')->first()->id;
       $activity->save();
+      if ($activity->professional_id != null) {
+        $user = Professional::find($activity->professional_id)->user;
+        $user->notify(new ActivityState());
+      }
       return response([
         'error' => false,
         'messages' => ['État modifié.'],
@@ -308,11 +313,14 @@ class ActivityController extends Controller
   {
     $state_id = State::where('label', $check_state_label)->first()->id;
     $activity = Activity::find($id);
-
     if ($activity) {
       if ($activity->state->id == $state_id) {
         $activity->state_id = State::where('label', $new_state_label)->first()->id;
         $activity->save();
+        if ($activity->professional_id != null) {
+          $user = Professional::find($activity->professional_id)->user;
+          $user->notify(new ActivityState());
+        }
         return response([
           'error' => false,
           'messages' => ['État modifié.'],
