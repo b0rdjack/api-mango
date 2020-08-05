@@ -66,7 +66,7 @@ class SearchController extends Controller
         $activities = $this->filterAll($activities, $duration, $this->checkRestauration($subcategories), $amount);
 
         $journeys = [];
-        if (count($activities) > 0) {
+        if ($activities && (count($activities) > 0)) {
           // Generate journeys
           $journeys = $this->generateJourneys($departure, $activities, $request->input('transport.label'));
         }
