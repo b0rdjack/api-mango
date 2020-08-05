@@ -66,8 +66,7 @@ class SearchController extends Controller
         $activities = $this->filterAll($activities, $duration, $this->checkRestauration($subcategories), $amount);
 
         $journeys = [];
-
-        if ($activities) {
+        if (count($activities) > 0) {
           // Generate journeys
           $journeys = $this->generateJourneys($departure, $activities, $request->input('transport.label'));
         }
@@ -119,17 +118,22 @@ class SearchController extends Controller
    */
   private function getActivitiesByFilters($state_id, $postal_code_id, $subcategories, $amount, $tags)
   {
-    return Activity::where('state_id', $state_id)
+    $activities = Activity::where('state_id', $state_id)
       ->where('postal_code_id', $postal_code_id)
       ->whereHas('subcategory', function ($query) use ($subcategories) {
         return $query->whereIn('subcategories.id', $subcategories);
       })
       ->whereHas('prices', function ($query) use ($amount) {
         return $query->where('amount', '<=', $amount);
-      })
-      ->whereHas('tags', function ($q) use ($tags) {
+      });
+    // Include tags only if it's a restaurant
+    if ($this->checkRestauration($subcategories)) {
+      Log::info("Hello");
+      $activities->whereHas('tags', function ($q) use ($tags) {
         $q->whereIn('tags.id', $tags);
-      })->get();
+      });
+    }
+    return $activities->get();
   }
 
   /**
