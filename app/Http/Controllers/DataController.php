@@ -14,12 +14,68 @@ use Illuminate\Support\Facades\Log;
 
 class DataController extends Controller
 {
+  private $state_id;
+  private $quantity_id;
+
+  public function __construct(){
+    $this->state_id =  State::where('label', 'Accepted')->first()->id;
+    $this->quantity_id = Quantity::where('label', '1 personne')->first()->id;
+  }
+
+  public function cinemas()
+  {
+    $subcategory_id = Subcategory::where('label', 'Cinéma')->first()->id;
+
+    $filename = storage_path('/app/cinemas.csv');
+
+    if (($handle = fopen($filename, "r")) !== FALSE) {
+      while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) {
+        if ($data[1] == "75") {
+          $name = $data[2];
+
+          // Set opening and closing hours from 10h00 -> 22h00 by default
+          $opening_hours = 36000;
+          $closing_hours = 79200;
+          $average_time_spent = 7200;
+
+          $disabled_access = false;
+          $amount = 00.00;
+
+          // Address configuration
+          $address = $data[4];
+
+          $postal_code = $data[5];
+          $postal_code = substr_replace($postal_code, "0", 2, 1);
+          $postal_code = Postal_code::where('code', $postal_code)->first();
+
+          $coordinates = $data[33];
+          $coordinates = explode(",",$coordinates);
+          $latitude = $coordinates[0];
+          $longitude = $coordinates[1];
+
+          // Check if museum exists already
+          $check_activity = Activity::where('name', $name)->get();
+          if (count($check_activity) == 0) {
+            $activity = new Activity();
+
+            $activity->address = $address;
+            $activity->postal_code_id = $postal_code->id;
+            $activity->longitude = $longitude;
+            $activity->latitude = $latitude;
+
+            $activity = $this->createActivity($activity, $name, $opening_hours, $closing_hours, $average_time_spent, $subcategory_id, $this->state_id, $disabled_access);
+            if ($activity->save()) {
+              $this->createPrice($activity, $amount, $this->quantity_id);
+            }
+          }
+        }
+      }
+    }
+  }
 
   public function museums()
   {
     $subcategory_id = Subcategory::where('label', 'Musée')->first()->id;
-    $state_id = State::where('label', 'Accepted')->first()->id;
-    $quantity_id = Quantity::where('label', '1 personne')->first()->id;
 
     $filename = storage_path('/app/musees.csv');
     if (($handle = fopen($filename, "r")) !== FALSE) {
@@ -51,9 +107,9 @@ class DataController extends Controller
               $activity = $this->checkAddress($activity, $address, $postal_code);
               // Create the activity and the price
               if ($activity) {
-                $activity = $this->createActivity($activity, $name, $opening_hours, $closing_hours, $average_time_spent, $subcategory_id, $state_id, $disabled_access);
+                $activity = $this->createActivity($activity, $name, $opening_hours, $closing_hours, $average_time_spent, $subcategory_id, $this->state_id, $disabled_access);
                 if ($activity->save()) {
-                  $this->createPrice($activity, $amount, $quantity_id);
+                  $this->createPrice($activity, $amount, $this->quantity_id);
                 }
               }
             }
@@ -66,8 +122,6 @@ class DataController extends Controller
   public function jardins()
   {
     $subcategory_id = Subcategory::where('label', 'Jardin')->first()->id;
-    $state_id = State::where('label', 'Accepted')->first()->id;
-    $quantity_id = Quantity::where('label', '1 personne')->first()->id;
 
     $filename = storage_path('/app/espaces_verts.csv');
     if (($handle = fopen($filename, "r")) !== FALSE) {
@@ -101,9 +155,9 @@ class DataController extends Controller
                 $activity = $this->checkAddress($activity, $address, $postal_code);
                 // Create the activity and the price
                 if ($activity) {
-                  $activity = $this->createActivity($activity, $name, $opening_hours, $closing_hours, $average_time_spent, $subcategory_id, $state_id, $disabled_access);
+                  $activity = $this->createActivity($activity, $name, $opening_hours, $closing_hours, $average_time_spent, $subcategory_id, $this->state_id, $disabled_access);
                   if ($activity->save()) {
-                    $this->createPrice($activity, $amount, $quantity_id);
+                    $this->createPrice($activity, $amount, $this->quantity_id);
                   }
                 }
               }
