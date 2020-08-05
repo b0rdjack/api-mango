@@ -24,9 +24,7 @@ class DataController extends Controller
     $row = 1;
     if (($handle = fopen($filename, "r")) !== FALSE) {
       while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) {
-        $num = count($data);
-        // echo "<p> $num fields in line $row: <br /></p>\n";
-        // $row++;
+        // Check if it's a complete line
         if (count($data) > 2) {
           if (($data[3] != "Cimetière") && ($data[3] != "Talus")) {
             if ($this->getSuperficie($data[10]) >= 300) {
