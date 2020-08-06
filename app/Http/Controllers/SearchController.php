@@ -126,14 +126,14 @@ class SearchController extends Controller
       ->whereHas('prices', function ($query) use ($amount) {
         return $query->where('amount', '<=', $amount);
       });
+    $activities_no_restaurant = $activities->get();
     // Include tags only if it's a restaurant
     if ($this->checkRestauration($subcategories)) {
-      Log::info("Hello");
       $activities->whereHas('tags', function ($q) use ($tags) {
         $q->whereIn('tags.id', $tags);
-      });
+      })->get();
     }
-    return $activities->get();
+    return $activities_no_restaurant->merge($activities);
   }
 
   /**
@@ -250,13 +250,13 @@ class SearchController extends Controller
   private function generateJourneys($departure, $activities, $mode)
   {
     $journeys = [];
-    // Get journey from departure to the first activity
+    // Get journey from the departure to the first activity
     array_push($journeys, $this->getJourney($departure, $activities[0], $mode));
     // Get the journey in between all the other activities and check if there is more than one activity
     if (count($activities) > 1) {
-      for ($i = 0; $i <= count($activities); $i++) {
+      for ($i = 0; $i < count($activities); $i++) {
         // Check if there is an activity left
-        if ($i + 1 <= count($activities)) {
+        if ($i + 1 < count($activities)) {
           $journey = $this->getJourney($activities[$i], $activities[$i + 1], $mode);
           // If a journey exists in between the two activites
           if ($journey) {
