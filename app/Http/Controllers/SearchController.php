@@ -63,7 +63,7 @@ class SearchController extends Controller
         $activities = $this->getActivitiesByFilters($state_id, $postal_code_id, $subcategories, $amount, $tags);
 
         // Filter the activities according the time the user has
-        $activities = $this->filterAll($activities, $duration, $this->checkRestauration($subcategories), $amount);
+        $activities = $this->filterAll($activities, $duration, $this->checkRestauration($subcategories), $amount, $subcategories);
 
         $journeys = [];
         if ($activities && (count($activities) > 0)) {
@@ -151,7 +151,7 @@ class SearchController extends Controller
   /**
    * Filter activity by time
    */
-  private function filterAll($activities, $duration, $restaurant, $amount_max)
+  private function filterAll($activities, $duration, $restaurant, $amount_max, $subcategories)
   {
     $sum = 0;
     $i = 0;
@@ -187,10 +187,19 @@ class SearchController extends Controller
       $current_activity = $tmp_activities[$i];
       // Check if the activity is open AND if it's not closed and won't be after spending time in the previous activities AND the amount of the activity added to previous ones won't exceed the user's max
       if (($now > $current_activity->opening_hours) && ($now < $current_activity->closing_hours + $sum) && ($amount_max >= $current_activity->prices()->first()->amount + $amount)) {
-        // Add the average time spent in a activity to the sum
-        $amount += $current_activity->prices()->first()->amount;
-        $sum += $current_activity->average_time_spent;
-        $activities->push($current_activity);
+        // Are we still searching an activity with this subcategory ?
+        if (in_array($current_activity->subcategory_id, $subcategories)) {
+          // Add the amount
+          $amount += $current_activity->prices()->first()->amount;
+          // Add the average time spent in a activity to the sum
+          $sum += $current_activity->average_time_spent;
+          // Save the activity
+          $activities->push($current_activity);
+          // Remove from the subcategories, the subcategory of the activity chosen
+          if (($key = array_search($current_activity->subcategory_id, $subcategories)) !== false) {
+            unset($subcategories[$key]);
+          }
+        }
       }
       // Limit the number of activites
       if (count($activities) == 3) return $activities;
