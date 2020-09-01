@@ -215,11 +215,21 @@ class SearchController extends Controller
   {
     // Get current time in secondes
     $now = $this->convertTimeToSecond(Carbon::now()->toTimeString());
+    $restaurants = $activities->filter->isRestaurant();
+    if ($restaurants->isNotEmpty()){
 
+    }
     // Iterate through each activity
     foreach ($activities as $activity) {
       // If the activiy is a Restauration category AND it's open AND not closed AND the amount is less than the user's max
       if (($activity->subcategory->isRestauration()) && ($activity->opening_hours < $now) && ($activity->closing_hours > $now) && ($activity->prices()->first()->amount <= $amount_max)) {
+        // Check if the activity is a "real" restaurant
+        if ($activity->restaurant()->exists()) {
+          // The restaurant have got two opening/closings hours. Here we are checking the night shift
+          if (($activity->restaurant()->opening_hours < $now) && ($activity->restaurant()->closing_hours > $now)){
+            return $activity;
+          }
+        }
         return $activity;
       }
     }
