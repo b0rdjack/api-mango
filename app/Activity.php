@@ -57,4 +57,8 @@ class Activity extends Model
         $state_id = State::where('label', 'Accepted')->first()->id;
         return $this->state_id === $state_id;
     }
+
+    public function isRestaurant() {
+        return $this->has('restaurant')->exists();
+    }
 }

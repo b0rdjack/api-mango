@@ -226,7 +226,7 @@ class SearchController extends Controller
         // Check if the activity is a "real" restaurant
         if ($activity->restaurant()->exists()) {
           // The restaurant have got two opening/closings hours. Here we are checking the night shift
-          if (($activity->restaurant()->opening_hours < $now) && ($activity->restaurant()->closing_hours > $now)){
+          if (($activity->restaurant->opening_hours < $now) && ($activity->restaurant->closing_hours > $now)){
             return $activity;
           }
         }
