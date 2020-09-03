@@ -18,42 +18,91 @@ class TagSeeder extends Seeder
 
         DB::table('tags')->insert(
             [
-                'label' => 'Halal',
+                'label' => 'Africain',
                 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
             ]
         );
         DB::table('tags')->insert(
             [
-                'label' => 'Casher',
+                'label' => 'Asiatique',
                 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
             ]
         );
         DB::table('tags')->insert(
             [
-                'label' => 'LGBT friendly',
+                'label' => 'Français',
                 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
             ]
         );
         DB::table('tags')->insert(
             [
-                'label' => 'Vegan',
+                'label' => 'Fast Food',
                 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
             ]
         );
         DB::table('tags')->insert(
             [
-                'label' => 'Gluten free',
+                'label' => 'Grec',
                 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
             ]
         );
         DB::table('tags')->insert(
             [
-                'label' => 'Lactose free',
+                'label' => 'Indien',
+                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+            ]
+        );
+        DB::table('tags')->insert(
+            [
+                'label' => 'Italien',
+                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+            ]
+        );
+        DB::table('tags')->insert(
+            [
+                'label' => 'Japonais',
+                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+            ]
+        );
+        DB::table('tags')->insert(
+            [
+                'label' => 'Mexicain',
+                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+            ]
+        );
+        DB::table('tags')->insert(
+            [
+                'label' => 'Moyen-Orient',
+                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+            ]
+        );
+        DB::table('tags')->insert(
+            [
+                'label' => 'Turque',
+                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+            ]
+        );
+        DB::table('tags')->insert(
+            [
+                'label' => 'Végétarien',
+                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+                'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
+            ]
+        );
+        DB::table('tags')->insert(
+            [
+                'label' => 'Vietnamien',
                 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
             ]
