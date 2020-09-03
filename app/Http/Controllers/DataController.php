@@ -6,8 +6,10 @@ use App\Activity;
 use App\Postal_code;
 use App\Price;
 use App\Quantity;
+use App\Restaurant;
 use App\State;
 use App\Subcategory;
+use App\Tag;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -17,9 +19,191 @@ class DataController extends Controller
   private $state_id;
   private $quantity_id;
 
-  public function __construct(){
+  public function __construct()
+  {
     $this->state_id =  State::where('label', 'Accepted')->first()->id;
     $this->quantity_id = Quantity::where('label', '1 personne')->first()->id;
+  }
+
+  public function restaurants()
+  {
+    $filename = storage_path('/app/restaurants.csv');
+
+    // 11h -> 14h / 19h00 -> 23h00 => RESTAURANTS
+    $lunch_opening_hours = 39600;
+    $lunch_closing_hours = 50400;
+    $dinner_opening_hours = 68400;
+    $dinner_closing_hours = 82800;
+
+    // 11h -> 23h59 => FAST FOOD
+    $ff_opening_hours = 39600;
+    $ff_closing_hours = 86340;
+
+    // 10h -> 21h00 => OTHERS (Coffee etc.)
+    $other_opening_hours = 36000;
+    $other_closing_hours = 75600;
+
+    // TAGS
+    $african_tag = Tag::where("label", "Africain")->first()->id;
+    $asian_tag = Tag::where("label", "Asiatique")->first()->id;
+    $french_tag = Tag::where("label", "Français")->first()->id;
+    $fast_food_tag = Tag::where("label", "Fast Food")->first()->id;
+    $greek_tag = Tag::where("label", "Grec")->first()->id;
+    $indian_tag = Tag::where("label", "Indien")->first()->id;
+    $italian_tag = Tag::where("label", "Italien")->first()->id;
+    $japanese_tag = Tag::where("label", "Japonais")->first()->id;
+    $mexican_tag = Tag::where("label", "Mexicain")->first()->id;
+    $middle_east_tag = Tag::where("label", "Moyen-Orient")->first()->id;
+    $turkish_tag = Tag::where("label", "Turque")->first()->id;
+    $vegetarian_tag = Tag::where("label", "Végétarien")->first()->id;
+    $vietnamese_tag = Tag::where("label", "Vietnamien")->first()->id;
+
+    // SUB CATEGORIES
+    $bar_id = Subcategory::where('label', 'Bar')->first()->id;
+    $cafe_id = Subcategory::where('label', 'Café')->first()->id;
+    $salon_the_id = Subcategory::where('label', 'Salon de thé')->first()->id;
+    $restaurant_id = Subcategory::where('label', 'Restaurant')->first()->id;
+
+
+    if (($handle = fopen($filename, 'r')) !== FALSE) {
+      while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+        // Check if name exists and its valid
+        if (!empty($data[6]) && (preg_match("/[a-z]/i", $data[6]))) {
+          // If the subcategory is not empty
+          if (!empty($data[9])) {
+            // Check if there is a lat and a long value
+            if ((!empty($data[3])) && (!empty($data[4]))) {
+              $latitude = $data[3];
+              $longitude = $data[4];
+              // Are the values correct ? (Not letters)
+              if ((preg_match("/[a-z]/i", $latitude) == 0) && (preg_match("/[a-z]/i", $longitude) == 0)) {
+
+                $disabled_access = false;
+                $amount = $this->getPrice($data[12]);
+                $name = $data[6];
+
+                // 1h30
+                $average_time_spent = 5400;
+                $activity = new Activity();
+
+                $activity = $this->getAddress($activity, $longitude, $latitude);
+                $data[9] = strval($data[9]);
+
+                // Check if address is exisiting
+                if ($activity) {
+                  // Bar
+                  if ((strpos($data[9], "Bar") !== FALSE)
+                    || (strpos($data[9], "Cocktail Bar") !== FALSE)
+                    || (strpos($data[9], "Pub") !== FALSE)
+                    || (strpos($data[9], "Hotel Bar") !== FALSE)
+                  ) {
+                    $activity = $this->createActivity($activity, $name, $other_opening_hours, $other_closing_hours, $average_time_spent, $bar_id, $this->state_id, $disabled_access);
+                    if ($activity->save()) {
+                      $this->createPrice($activity, $amount, $this->quantity_id);
+                    }
+                  }
+                  // Café
+                  if ((strpos($data[9], "Café") !== FALSE)
+                    || (strpos($data[9], "Coffee Shop") !== FALSE)
+                    || (strpos($data[9], "Cafetaria") !== FALSE)
+                  ) {
+                    $activity = $this->createActivity($activity, $name, $other_opening_hours, $other_closing_hours, $average_time_spent, $cafe_id, $this->state_id, $disabled_access);
+                    if ($activity->save()) {
+                      $this->createPrice($activity, $amount, $this->quantity_id);
+                    }
+                  }
+                  // Salon de thé
+                  if (strpos($data[9], "Tea Room") !== FALSE) {
+                    $activity = $this->createActivity($activity, $name, $other_opening_hours, $other_closing_hours, $average_time_spent, $salon_the_id, $this->state_id, $disabled_access);
+                    if ($activity->save()) {
+                      $this->createPrice($activity, $amount, $this->quantity_id);
+                    }
+                  }
+                  // Fast Food
+                  if (strpos($data[9], "Pizza Place") !== FALSE) {
+                    $activity = $this->createActivity($activity, $name, $ff_opening_hours, $ff_closing_hours, $average_time_spent, $restaurant_id, $this->state_id, $disabled_access);
+                    if ($activity->save()) {
+                      $this->createPrice($activity, $amount, $this->quantity_id);
+                    }
+                    $activity->tags()->attach($fast_food_tag);
+                    $activity->save();
+                  }
+                  // Restaurants
+                  if (strpos($data[9], "Restaurant") !== FALSE) {
+                    $type = trim(explode("Restaurant", $data[9], 2)[0]);
+                    $maximum_capacity = 10;
+                    $activity = $this->createRestaurant(
+                      $activity,
+                      $name,
+                      $lunch_opening_hours,
+                      $lunch_closing_hours,
+                      $dinner_opening_hours,
+                      $dinner_closing_hours,
+                      $average_time_spent,
+                      $restaurant_id,
+                      $disabled_access,
+                      $amount,
+                      $maximum_capacity
+                    );
+                    switch ($type) {
+                      case "African":
+                        $this->createTag($activity, $african_tag);
+                        break;
+                      case "Asian":
+                        $this->createTag($activity, $asian_tag);
+                        break;
+                      case "Chinese":
+                        $this->createTag($activity, $asian_tag);
+                        break;
+                      case "Fast Food":
+                        $activity = $this->createActivity($activity, $name, $ff_opening_hours, $ff_closing_hours, $average_time_spent, $restaurant_id, $this->state_id, $disabled_access);
+                        if ($activity->save()) {
+                          $this->createPrice($activity, $amount, $this->quantity_id);
+                        }
+                        $this->createTag($activity, $fast_food_tag);
+                        break;
+                      case "French":
+                        $this->createTag($activity, $french_tag);
+                        break;
+                      case "Greek":
+                        $this->createTag($activity, $greek_tag);
+                        break;
+                      case "Indian":
+                        $this->createTag($activity, $indian_tag);
+                        break;
+                      case "Italian":
+                        $this->createTag($activity, $italian_tag);
+                        break;
+                      case "Japanese":
+                        $this->createTag($activity, $japanese_tag);
+                        break;
+                      case "Mexican":
+                        $this->createTag($activity, $mexican_tag);
+                        break;
+                      case "Middle Eastern":
+                        $this->createTag($activity, $middle_east_tag);
+                        break;
+                      case "Sushi":
+                        $this->createTag($activity, $japanese_tag);
+                        break;
+                      case "Turkish":
+                        $this->createTag($activity, $turkish_tag);
+                        break;
+                      case "Vegetarian / Vegan":
+                        $this->createTag($activity, $vegetarian_tag);
+                        break;
+                      case "Vietnamese":
+                        $this->createTag($activity, $vietnamese_tag);
+                        break;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   public function cinemas()
@@ -49,7 +233,7 @@ class DataController extends Controller
           $postal_code = Postal_code::where('code', $postal_code)->first();
 
           $coordinates = $data[33];
-          $coordinates = explode(",",$coordinates);
+          $coordinates = explode(",", $coordinates);
           $latitude = $coordinates[0];
           $longitude = $coordinates[1];
 
@@ -209,6 +393,48 @@ class DataController extends Controller
     $superficie = str_replace(' ', '', $arr[0]);
     return (int)$superficie;
   }
+  /**
+   * Create Restaurant
+   */
+  private function createRestaurant(
+    $activity,
+    $name,
+    $lunch_opening_hours,
+    $lunch_closing_hours,
+    $dinner_opening_hours,
+    $dinner_closing_hours,
+    $average_time_spent,
+    $subcategory_id,
+    $disabled_access,
+    $amount,
+    $maximum_capacity
+  ) {
+    // Create Activity
+    $activity = $this->createActivity($activity, $name, $lunch_opening_hours, $lunch_closing_hours, $average_time_spent, $subcategory_id, $this->state_id, $disabled_access);
+    // Create Price
+    if ($activity->save()) {
+      $this->createPrice($activity, $amount, $this->quantity_id);
+    }
+    // Create dinner hours
+    $restaurant = new Restaurant();
+    $restaurant->opening_hours = $dinner_opening_hours;
+    $restaurant->closing_hours = $dinner_closing_hours;
+    $restaurant->activity_id = $activity->id;
+    $restaurant->maximum_capacity = $maximum_capacity;
+    $restaurant->save();
+
+    $activity->save();
+    return $activity;
+  }
+
+  /**
+   * Create Tag
+   */
+  private function createTag($activity, $tag_id)
+  {
+    $activity->tags()->attach($tag_id);
+    $activity->save();
+  }
 
   /**
    * Check the validity of an Address
@@ -239,6 +465,54 @@ class DataController extends Controller
       }
     } else {
       return null;
+    }
+  }
+
+  private function getAddress($activity, $longitude, $latitude)
+  {
+    // Get the url from the constant file
+    $url = Config::get('constants.API.Adresse.reverse');
+    // Prepare the parameters (Doc: https://geo.api.gouv.fr/reverse)
+    $parameters = $url . "?lon=" . $longitude . "&lat=" . $latitude;
+    // Get the reponse in json
+    $response = Http::get($parameters)->json();
+    // If the address exists
+    if (!empty($response['features'])) {
+      $properties =  $response['features'][0]['properties'];
+      $coordinates = $response['features'][0]['geometry']['coordinates'];
+
+      // Check if postal code exists in the database
+      $postal_code = Postal_code::where('code', $properties['postcode'])->first();
+      if ($postal_code) {
+        $activity->address = $properties['name'];
+        $activity->postal_code_id = $postal_code->id;
+        $activity->longitude = $coordinates[0];
+        $activity->latitude = $coordinates[1];
+        return $activity;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Get the average amount from price indication, $, $$ - $$$, $$$$
+   */
+  private function getPrice($price_indication)
+  {
+    $price_indication = substr_count($price_indication, "$");
+    switch ($price_indication) {
+      case 1:
+        return 10.00;
+        break;
+      case 4:
+        return 30.00;
+        break;
+      case 5:
+        return 20.00;
+        break;
     }
   }
 }
