@@ -6,8 +6,10 @@ use App\Activity;
 use App\Postal_code;
 use App\State;
 use App\Subcategory;
+use App\Trip;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -72,10 +74,22 @@ class SearchController extends Controller
         }
 
         if ($journeys) {
-          return response([
-            'error' => false,
-            'journeys' => $journeys
-          ]);
+          //Create Trip
+          $customer = Auth::user();
+          $transport_id = $request->input('transport.id');
+          $trip = $this->createTrip($customer->id, $duration, $amount, $transport_id, $activities);
+
+          if ($trip) {
+            return response([
+              'error' => false,
+              'journeys' => $journeys
+            ]);
+          } else {
+            return response([
+              'error' => true,
+              'messages' => ['Oups ! Une erreur interne est survenue']
+            ]);
+          }
         } else {
           return response([
             'error' => true,
@@ -390,5 +404,34 @@ class SearchController extends Controller
       }
     }
     return $tmp_journeys;
+  }
+
+  /**
+   * Create Trip
+   */
+  private function createTrip($customer_id, $duration, $amount, $transport_id, $activities)
+  {
+    $trip = new Trip();
+
+    $trip->duration = $duration;
+    $trip->max_budget = $amount;
+    $trip->min_budget = $amount;
+    $trip->number_person = 1;
+    $trip->transport_id = $transport_id;
+    $trip->customer_id = $customer_id;
+
+    if ($trip->save()) {
+      // Create tags relation
+      $ids = [];
+      // Iterate through each tag
+      foreach ($activities as $activity) {
+        // Get the Tag's id
+        array_push($ids, $activity['id']);
+      }
+      $trip->activities()->sync($ids);
+      return true;
+    } else {
+      return false;
+    }
   }
 }
