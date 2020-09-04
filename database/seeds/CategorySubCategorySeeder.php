@@ -36,32 +36,14 @@ class CategorySubCategorySeeder extends Seeder
     // Seed subcategories
     $subcategories = [];
     $subcategory_labels = [
-      'Théâtre', //1
-      'Concert', //2
-      'Cinéma', //3
-      'Musée', //4
-      'Spectacle', //5
-      'Monument', //6
-      'Atelier', //7
-      'Boîte', //8
-      'Escape game', //9
-      'Bowling', //10
-      'Piscine', //11
-      'Centre sportif', //12
-      'Centre commercial', //13
-      'Lieu de tournage', //14
-      'Café', //15
-      'Salon de thé', //16
-      'Bar', //17
-      'Restaurant', //18
-      'Street food', //19
-      'Fast food', //20
-      'Glacier', //21
-      'Parc', //22
-      'Jardin', //23
-      'Berge', //24
-      'Pont', //25
-      'Quartier', //26
+      'Cinéma', //1
+      'Musée', //2
+      'Café', //3
+      'Salon de thé', //4
+      'Bar', //5
+      'Restaurant', //6
+      'Fast food', //7
+      'Jardin', //8
     ];
 
     for ($i = 0; $i < count($subcategory_labels); $i++) {
@@ -69,10 +51,10 @@ class CategorySubCategorySeeder extends Seeder
     }
 
     // Seed relations
-    $categories[1]->subcategories()->sync(1, 2, 3, 4, 5, 6);
-    $categories[2]->subcategories()->sync(2, 3, 7, 8, 9, 10, 11, 12, 13, 14);
-    $categories[3]->subcategories()->sync(15, 16, 17, 18, 19, 20, 21);
-    $categories[4]->subcategories()->sync(22, 23, 24, 25, 26);
+    $categories[1]->subcategories()->sync(1, 2);
+    $categories[2]->subcategories()->sync(1);
+    $categories[3]->subcategories()->sync(3, 4, 5, 6, 7);
+    $categories[4]->subcategories()->sync(8);
   }
 
   /**
