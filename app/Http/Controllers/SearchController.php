@@ -127,8 +127,8 @@ class SearchController extends Controller
         return $query->where('amount', '<=', $amount);
       });
     $activities_no_restaurant = $activities->get();
-    // Include tags only if it's a restaurant
-    if ($this->checkRestauration($subcategories)) {
+    // Include tags only if it's a Restaurant
+    if ($this->checkRestaurant($subcategories)) {
       $activities->whereHas('tags', function ($q) use ($tags) {
         $q->whereIn('tags.id', $tags);
       })->get();
@@ -148,6 +148,14 @@ class SearchController extends Controller
     return false;
   }
 
+  private function checkRestaurant($subcategories)
+  {
+    foreach ($subcategories as $subcategory) {
+      $subcategory = Subcategory::find($subcategory);
+      if ($subcategory->label === "Restaurant") return true;
+    }
+    return false;
+  }
   /**
    * Filter activity by time
    */
@@ -158,6 +166,7 @@ class SearchController extends Controller
     $amount = 0;
     // Shuffle the activites
     $tmp_activities = $activities->shuffle();
+
     $activities = collect();
 
     // Get the current time in secondes
@@ -215,10 +224,6 @@ class SearchController extends Controller
   {
     // Get current time in secondes
     $now = $this->convertTimeToSecond(Carbon::now()->toTimeString());
-    $restaurants = $activities->filter->isRestaurant();
-    if ($restaurants->isNotEmpty()){
-
-    }
     // Iterate through each activity
     foreach ($activities as $activity) {
       // If the activiy is a Restauration category AND it's open AND not closed AND the amount is less than the user's max
@@ -226,7 +231,7 @@ class SearchController extends Controller
         // Check if the activity is a "real" restaurant
         if ($activity->restaurant()->exists()) {
           // The restaurant have got two opening/closings hours. Here we are checking the night shift
-          if (($activity->restaurant->opening_hours < $now) && ($activity->restaurant->closing_hours > $now)){
+          if (($activity->restaurant->opening_hours < $now) && ($activity->restaurant->closing_hours > $now)) {
             return $activity;
           }
         }
