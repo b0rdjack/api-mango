@@ -63,7 +63,7 @@ class DataController extends Controller
     $cafe_id = Subcategory::where('label', 'Café')->first()->id;
     $salon_the_id = Subcategory::where('label', 'Salon de thé')->first()->id;
     $restaurant_id = Subcategory::where('label', 'Restaurant')->first()->id;
-
+    $fast_food_id = Subcategory::where('label', 'Fast Food')->first()->id;
 
     if (($handle = fopen($filename, 'r')) !== FALSE) {
       while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
@@ -125,8 +125,6 @@ class DataController extends Controller
                     if ($activity->save()) {
                       $this->createPrice($activity, $amount, $this->quantity_id);
                     }
-                    $activity->tags()->attach($fast_food_tag);
-                    $activity->save();
                   }
                   // Restaurants
                   if (strpos($data[9], "Restaurant") !== FALSE) {
@@ -156,11 +154,10 @@ class DataController extends Controller
                         $this->createTag($activity, $asian_tag);
                         break;
                       case "Fast Food":
-                        $activity = $this->createActivity($activity, $name, $ff_opening_hours, $ff_closing_hours, $average_time_spent, $restaurant_id, $this->state_id, $disabled_access);
+                        $activity = $this->createActivity($activity, $name, $ff_opening_hours, $ff_closing_hours, $average_time_spent, $fast_food_id, $this->state_id, $disabled_access);
                         if ($activity->save()) {
                           $this->createPrice($activity, $amount, $this->quantity_id);
                         }
-                        $this->createTag($activity, $fast_food_tag);
                         break;
                       case "French":
                         $this->createTag($activity, $french_tag);
