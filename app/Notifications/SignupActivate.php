@@ -44,7 +44,7 @@ class SignupActivate extends Notification
 
         return (new MailMessage)
                     ->subject('Veuillez confirmer votre compte')
-                    ->line("L'équipe de Parcours vous remercie de votre inscription ! Avant de profiter de l'application, veuillez confirmer votre compte.")
+                    ->line("L'équipe de Goyave vous remercie de votre inscription ! Avant de profiter de l'application, veuillez confirmer votre compte.")
                     ->action('Confirmez votre compte', url($url))
                     ->line("Merci d'utiliser notre application !");
     }
