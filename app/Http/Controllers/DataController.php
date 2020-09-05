@@ -47,7 +47,6 @@ class DataController extends Controller
     $african_tag = Tag::where("label", "Africain")->first()->id;
     $asian_tag = Tag::where("label", "Asiatique")->first()->id;
     $french_tag = Tag::where("label", "Français")->first()->id;
-    $fast_food_tag = Tag::where("label", "Fast Food")->first()->id;
     $greek_tag = Tag::where("label", "Grec")->first()->id;
     $indian_tag = Tag::where("label", "Indien")->first()->id;
     $italian_tag = Tag::where("label", "Italien")->first()->id;
