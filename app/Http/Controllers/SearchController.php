@@ -55,7 +55,21 @@ class SearchController extends Controller
       $departure = $this->getAddress($request->input('position.longitude'), $request->input('position.latitude'));
       $postal_code = $departure->postal_code;
       if ($postal_code && $departure->name) {
-        $postal_code_id = Postal_code::where('code', $postal_code)->first()->id;
+        $postal_code = Postal_code::where('code', $postal_code)->first();
+
+        // If user is out of Paris
+        if (!$postal_code) {
+          $rand_postal_code = Postal_code::all()->random(1);
+          $departure = $this->loadAddress($rand_postal_code->code);
+          if (!$departure) {
+            return response([
+              'error' => true,
+              'messages' => ["Il n'y a aucun parcours correspondant à vos critères pour le moment :("]
+            ]);
+          }
+        }
+
+        $postal_code_id = $postal_code->id;
         $subcategories = $request->input('subcategories.*.id');
         $duration = $request->input('duration');
         $amount = $request->input('amount');
@@ -99,7 +113,7 @@ class SearchController extends Controller
       } else {
         return response([
           'error' => true,
-          'messages' => ['La posistion saisie ne correpond à aucune adresse.']
+          'messages' => ['La position saisie ne correpond à aucune adresse.']
         ]);
       }
     }
@@ -120,6 +134,27 @@ class SearchController extends Controller
       $departure->name = $properties['name'];
       $departure->latitude =  $latitude;
       $departure->longitude = $longitude;
+      $departure->postal_code = $properties['postcode'];
+      return $departure;
+    } else {
+      return false;
+    }
+  }
+
+  private function loadAddress($postal_code)
+  {
+    // Get the url from the constant file
+    $url = Config::get('constants.API.Adresse.search');
+    $response = Http::get($url . "?q=" . $postal_code);
+
+    // If the address exists
+    if (!empty($response['features'])) {
+      $properties = $response['features'][0]['properties'];
+      $coordinates = $response['features'][0]["geometry"]["coordinates"];
+      $departure = new stdClass();
+      $departure->name = $properties['name'];
+      $departure->latitude = $coordinates[1];
+      $departure->longitude = $coordinates[0];
       $departure->postal_code = $properties['postcode'];
       return $departure;
     } else {
