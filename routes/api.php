@@ -82,4 +82,9 @@ Route::group(['middleware' => 'auth:api'], function () {
      * ============================================= Search =============================================
      */
     Route::post('/search', 'SearchController@search')->middleware('role:customer');
+
+    /**
+     * ============================================= Trip ===============================================
+     */
+    Route::get('/trips', 'TripController@index')->middleware('role:administrator');
 });
