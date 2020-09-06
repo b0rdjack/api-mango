@@ -15,4 +15,8 @@ class Trip extends Model
     public function activities() {
         return $this->belongsToMany('App\Activity');
     }
+
+    public function customer() {
+        return $this->belongsTo('App\Customer');
+    }
 }
