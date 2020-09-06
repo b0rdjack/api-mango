@@ -366,7 +366,7 @@ class SearchController extends Controller
       $journeys = $this->filterWalkingJourneys($journeys);
     }
     // If there are journeys in between the two points
-    if ($journeys > 0) {
+    if (!empty($journeys)) {
       $tmp_journey = $journeys[0];
       $tmp_sections = [];
 
