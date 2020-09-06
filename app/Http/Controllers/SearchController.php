@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Activity;
+use App\Customer;
 use App\Postal_code;
 use App\State;
 use App\Subcategory;
@@ -89,7 +90,8 @@ class SearchController extends Controller
 
         if ($journeys) {
           //Create Trip
-          $customer = Auth::user();
+          $user = Auth::user();
+          $customer = Customer::where('user_id', $user->id)->first();
           $transport_id = $request->input('transport.id');
           $trip = $this->createTrip($customer->id, $duration, $amount, $transport_id, $activities);
 
