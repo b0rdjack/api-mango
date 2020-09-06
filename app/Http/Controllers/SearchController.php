@@ -88,7 +88,7 @@ class SearchController extends Controller
           $journeys = $this->generateJourneys($departure, $activities, $request->input('transport.label'));
         }
 
-        if ($journeys) {
+        if (!empty($journeys)) {
           //Create Trip
           $user = Auth::user();
           $customer = Customer::where('user_id', $user->id)->first();
@@ -328,7 +328,7 @@ class SearchController extends Controller
     // Get journey from the departure to the first activity
     array_push($journeys, $this->getJourney($departure, $activities[0], $mode));
     // Get the journey in between all the other activities and check if there is more than one activity
-    if (count($activities) > 1) {
+    if (count($activities) > 1 && !empty($journeys)) {
       for ($i = 0; $i < count($activities); $i++) {
         // Check if there is an activity left
         if ($i + 1 < count($activities)) {
