@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Trip extends Model
 {
-    protected $fillable = ['duration', 'max_budget', 'min_budget', 'quantity'];
+    protected $fillable = ['duration', 'max_budget', 'min_budget', 'quantity', 'customer_id', 'transport_id'];
 
     public function transport() {
         return $this->belongsTo('App\Transport');
