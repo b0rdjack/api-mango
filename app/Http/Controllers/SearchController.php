@@ -228,7 +228,7 @@ class SearchController extends Controller
       // Get a random restaurant
       $activity = $this->getRandomlyRestaurant($tmp_activities, $amount_max);
       // Add the restaurant in the first position of the activites array
-      if ($activity) {
+      if (!empty($activity)) {
         $sum = $activity->average_time_spent;
         $amount = $activity->prices()->first()->amount;
         $activities->push($activity);
