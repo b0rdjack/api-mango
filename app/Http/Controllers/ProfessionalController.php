@@ -33,7 +33,7 @@ class ProfessionalController extends Controller
             'email' => 'email|required|unique:users',
             'password' => [
                 'required',
-                'regex:/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,32}$/',
+                'regex:/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[()~\][{}_|#?!@$%^&=+€*-]).{8,32}$/',
                 'confirmed'
             ],
             'card' => 'required',

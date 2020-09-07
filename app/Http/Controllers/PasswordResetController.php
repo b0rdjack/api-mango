@@ -103,7 +103,7 @@ class PasswordResetController extends Controller
     $validateData = Validator::make($request->all(), [
       'password' => [
         'required',
-        'regex:/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,32}$/',
+        'regex:/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[()~\][{}_|#?!@$%^&=+€*-]).{8,32}$/',
         'confirmed'
       ]
     ]);
