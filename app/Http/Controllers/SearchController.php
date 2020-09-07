@@ -36,9 +36,9 @@ class SearchController extends Controller
         'regex:/^[-]?(([0-8]?[0-9])\.(\d+))|(90(\.0+)?)$/'
       ],
       'duration' => 'digits_between:4,5|required',
-      'amount' => [
+      'price' => [
         'required',
-        'regex:/^\d+(\.\d{1,2})?$/'
+        'in:€,€€,€€€,€€€€'
       ],
       'transport.id' => 'exists:transports,id|required',
       'tags.*.id' => 'exists:tags,id|required',
@@ -52,6 +52,13 @@ class SearchController extends Controller
         'messages' => $validator->messages()
       ]);
     } else {
+      $prices = [
+        "€" => 10.00,
+        "€€" => 15.00,
+        "€€€" => 25.00,
+        "€€€€" => 30.00
+      ];
+
       // Check in which area is the user
       $departure = $this->getAddress($request->input('position.longitude'), $request->input('position.latitude'));
       $postal_code = $departure->postal_code;
@@ -73,7 +80,7 @@ class SearchController extends Controller
         $postal_code_id = $postal_code->id;
         $subcategories = $request->input('subcategories.*.id');
         $duration = $request->input('duration');
-        $amount = $request->input('amount');
+        $amount = $prices[$request->input('price')];
         $tags = $request->input('tags.*.id');
         $state_id = State::where('label', 'Accepted')->first()->id;
         // Get all the activities according the filters
@@ -325,24 +332,29 @@ class SearchController extends Controller
   private function generateJourneys($departure, $activities, $mode)
   {
     $journeys = [];
-    // Get journey from the departure to the first activity
-    array_push($journeys, $this->getJourney($departure, $activities[0], $mode));
-    // Get the journey in between all the other activities and check if there is more than one activity
-    if (count($activities) > 1 && !empty($journeys)) {
-      for ($i = 0; $i < count($activities); $i++) {
-        // Check if there is an activity left
-        if ($i + 1 < count($activities)) {
-          $journey = $this->getJourney($activities[$i], $activities[$i + 1], $mode);
-          // If a journey exists in between the two activites
-          if ($journey) {
-            array_push($journeys, $journey);
-          } else {
-            Log::error('No journey in between ' . $activities[$i]->id . ' and ' . $activities[$i + 1]->id);
-            return null;
+
+    $journey = $this->getJourney($departure, $activities[0], $mode);
+    if ($journey != null) {
+      // Get journey from the departure to the first activity
+      array_push($journeys, $journey);
+      // Get the journey in between all the other activities and check if there is more than one activity
+      if (count($activities) > 1 && !empty($journeys)) {
+        for ($i = 0; $i < count($activities); $i++) {
+          // Check if there is an activity left
+          if ($i + 1 < count($activities)) {
+            $journey = $this->getJourney($activities[$i], $activities[$i + 1], $mode);
+            // If a journey exists in between the two activites
+            if ($journey) {
+              array_push($journeys, $journey);
+            } else {
+              Log::error('No journey in between ' . $activities[$i]->id . ' and ' . $activities[$i + 1]->id);
+              return null;
+            }
           }
         }
       }
     }
+
     return $journeys;
   }
 
