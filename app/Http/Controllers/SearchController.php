@@ -67,7 +67,7 @@ class SearchController extends Controller
 
         // If user is out of Paris
         if (!$postal_code) {
-          $rand_postal_code = Postal_code::all()->random(1);
+          $rand_postal_code = Postal_code::all()->random(1)->first();
           $departure = $this->loadAddress($rand_postal_code->code);
           if (!$departure) {
             return response([
