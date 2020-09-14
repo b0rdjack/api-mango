@@ -1,85 +1,82 @@
-<p align="center"><img src="https://res.cloudinary.com/dtfbvvkyp/image/upload/v1566331377/laravel-logolockup-cmyk-red.svg" width="400"></p>
+<div align="center">
+  <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="laravel-logo">
+  <h1>API Mango 🥭</h1>
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
+  <p>REST API made with the web framework Laravel.</p>
+</div>
 
-## About Laravel
+## Resources 📝
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+* [Laravel](https://laravel.com/)
+* [Stripe API](https://stripe.com/docs/api)
+* [Navitia API](https://www.navitia.io/)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+I'd highly recommend reading through some of the Laravel, Stripe and Navitia documentation.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Project 🚧
 
-## Learning Laravel
+This REST API is part of a bigger project named *Goyave*. *Govaye* is a mobile app which generates journeys based on the user's likings. The journey are generated according multiple parameters: Localisation 📍, Time 🕑, Budget 💰 and Activity category 📁.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## REST API Actions ⚙️
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+This API handles the secured logins of users (customers, administrators and restaurant owners) with [OAuth2](https://oauth.net/2/) through [Passport](https://laravel.com/docs/7.x/passport). It also includes [Stripe](https://stripe.com/) in order to handle the SaaS part of the project (for the restaurant owners).
 
-## Laravel Sponsors
+The main
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+## Requirements 📄
 
-### Premium Partners
+To use this REST API you will need Composer and a Stripe Account.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
+### Node
 
-### Community Sponsors
+- #### Node installation on Windows
 
-<a href="https://op.gg"><img src="http://opgg-static.akamaized.net/icon/t.rectangle.png" width="150"></a>
+  Just go on [official Node.js website](https://nodejs.org/) and download the installer.
+  Also, be sure to have `git` available in your PATH, `npm` might need it (You can find git [here](https://git-scm.com/)).
 
-- [UserInsights](https://userinsights.com)
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
-- [User10](https://user10.com)
-- [Soumettre.fr](https://soumettre.fr/)
-- [CodeBrisk](https://codebrisk.com)
-- [1Forge](https://1forge.com)
-- [TECPRESSO](https://tecpresso.co.jp/)
-- [Runtime Converter](http://runtimeconverter.com/)
-- [WebL'Agence](https://weblagence.com/)
-- [Invoice Ninja](https://www.invoiceninja.com)
-- [iMi digital](https://www.imi-digital.de/)
-- [Earthlink](https://www.earthlink.ro/)
-- [Steadfast Collective](https://steadfastcollective.com/)
-- [We Are The Robots Inc.](https://watr.mx/)
-- [Understand.io](https://www.understand.io/)
-- [Abdel Elrafa](https://abdelelrafa.com)
-- [Hyper Host](https://hyper.host)
-- [Appoly](https://www.appoly.co.uk)
-- [云软科技](http://www.yunruan.ltd/)
+- #### Node installation on Ubuntu
 
-## Contributing
+  You can install nodejs and npm easily with apt install, just run the following commands.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+      $ sudo apt install nodejs
+      $ sudo apt install npm
 
-## Code of Conduct
+- #### Other Operating Systems
+  You can find more information about the installation on the [official Node.js website](https://nodejs.org/) and the [official NPM website](https://npmjs.org/).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+If the installation was successful, you should be able to run the following command.
 
-## Security Vulnerabilities
+    $ node --version
+    v10.14.2
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+    $ npm --version
+    6.4.1
 
-## License
+If you need to update `npm`, you can make it using `npm`! Cool right? After running the following command, just open again the command line and be happy.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+    $ npm install npm -g
+
+---
+
+## Install 📥
+
+    $ git clone https://github.com/AyazBulls/karaok-guard
+    $ cd karaok-guard
+    $ npm install
+
+## Configure app 🔧
+
+Open `config.json` then edit it with your settings. You will need:
+
+- BOT_TOKEN: Bot token provided by Discord. [More Info](https://www.writebots.com/discord-bot-token/)
+- PREFIX: The prefix which will be user to send commands to the bot
+- ADMIN_ROLE: The role required to play with the bot
+- PARENT_ID: ID of the parent channel which contains the *karaoke booths*
+
+## Running the project 🚀
+
+    $ npm start
+
+## Simple build for production 🔨
+
+    $ npm build
