@@ -59,8 +59,9 @@ To use this REST API you will need Composer, a Stripe account and a Navitia acco
 
 ## Configure app 🔧
 
-Open `.env` then edit it with your settings. You will need:
-- MAIL:...
+Open `.env` then edit it with your settings. <br> You will need to set the mailer (for the account confirmation mail). <br> You also need to add:
+- NAVITIA_KEY: Navitia API Key
+- STRIPE_API_KEY: Stripe API Key
 
 ## Running the project 🚀
 
