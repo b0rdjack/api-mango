@@ -52,18 +52,10 @@ class SearchController extends Controller
         'messages' => $validator->messages()
       ]);
     } else {
-      $prices = [
-        "€" => 10.00,
-        "€€" => 15.00,
-        "€€€" => 25.00,
-        "€€€€" => 30.00
-      ];
-
       // Check in which area is the user
       $departure = $this->getAddress($request->input('position.longitude'), $request->input('position.latitude'));
-      $postal_code = $departure->postal_code;
-      if ($postal_code && $departure->name) {
-        $postal_code = Postal_code::where('code', $postal_code)->first();
+      if ($departure->postal_code && $departure->name) {
+        $postal_code = Postal_code::where('code', $departure->postal_code)->first();
 
         // If user is out of Paris
         if (!$postal_code) {
@@ -77,14 +69,21 @@ class SearchController extends Controller
           }
         }
 
-        $postal_code_id = $postal_code->id;
+        $prices = [
+          "€" => 10.00,
+          "€€" => 15.00,
+          "€€€" => 25.00,
+          "€€€€" => 30.00
+        ];
+
         $subcategories = $request->input('subcategories.*.id');
         $duration = $request->input('duration');
         $amount = $prices[$request->input('price')];
         $tags = $request->input('tags.*.id');
         $state_id = State::where('label', 'Accepted')->first()->id;
+
         // Get all the activities according the filters
-        $activities = $this->getActivitiesByFilters($state_id, $postal_code_id, $subcategories, $amount, $tags);
+        $activities = $this->getActivitiesByFilters($state_id, $postal_code->id, $subcategories, $amount, $tags);
 
         // Filter the activities according the time the user has
         $activities = $this->filterAll($activities, $duration, $this->checkRestauration($subcategories), $amount, $subcategories);
@@ -149,7 +148,9 @@ class SearchController extends Controller
       return false;
     }
   }
-
+  /**
+   * Get Address from postal code
+   */
   private function loadAddress($postal_code)
   {
     // Get the url from the constant file
@@ -219,7 +220,7 @@ class SearchController extends Controller
    */
   private function filterAll($activities, $duration, $restaurant, $amount_max, $subcategories)
   {
-    $sum = 0;
+    $hours_sum = 0;
     $i = 0;
     $amount = 0;
     // Shuffle the activites
@@ -233,10 +234,10 @@ class SearchController extends Controller
     // Check if the user asked for a restaurant
     if ($restaurant) {
       // Get a random restaurant
-      $activity = $this->getRandomlyRestaurant($tmp_activities, $amount_max);
+      $activity = $this->getRandomlyRestaurant($tmp_activities, $amount_max, $now);
       // Add the restaurant in the first position of the activites array
       if (!empty($activity)) {
-        $sum = $activity->average_time_spent;
+        $hours_sum = $activity->average_time_spent;
         $amount = $activity->prices()->first()->amount;
         $activities->push($activity);
 
@@ -244,22 +245,22 @@ class SearchController extends Controller
         // This is because for the MVP we decided to put only one activity of Restauration type in the output
         $tmp_activities = $this->removeRestaurants($tmp_activities);
       } else {
-        Log::error('No activity with the restauration category !');
+        Log::error('No activity with the restauration category !!');
         return false;
       }
     }
 
     // Add all the other activities according the time left for the user.
-    while (($sum < $duration) && ($i < count($tmp_activities))) {
+    while (($hours_sum < $duration) && ($i < count($tmp_activities))) {
       $current_activity = $tmp_activities[$i];
       // Check if the activity is open AND if it's not closed and won't be after spending time in the previous activities AND the amount of the activity added to previous ones won't exceed the user's max
-      if (($now > $current_activity->opening_hours) && ($now < $current_activity->closing_hours + $sum) && ($amount_max >= $current_activity->prices()->first()->amount + $amount)) {
+      if (($now > $current_activity->opening_hours) && ($now < $current_activity->closing_hours + $hours_sum) && ($amount_max >= $current_activity->prices()->first()->amount + $amount)) {
         // Are we still searching an activity with this subcategory ?
         if (in_array($current_activity->subcategory_id, $subcategories)) {
           // Add the amount
           $amount += $current_activity->prices()->first()->amount;
-          // Add the average time spent in a activity to the sum
-          $sum += $current_activity->average_time_spent;
+          // Add the average time spent in a activity to the hours_sum
+          $hours_sum += $current_activity->average_time_spent;
           // Save the activity
           $activities->push($current_activity);
           // Remove from the subcategories, the subcategory of the activity chosen
@@ -278,15 +279,13 @@ class SearchController extends Controller
   /**
    * Get a random activity with the Restauration category
    */
-  private function getRandomlyRestaurant($activities, $amount_max)
+  private function getRandomlyRestaurant($activities, $amount_max, $now)
   {
-    // Get current time in secondes
-    $now = $this->convertTimeToSecond(Carbon::now()->toTimeString());
     // Iterate through each activity
     foreach ($activities as $activity) {
-      // If the activiy is a Restauration category AND it's open AND not closed AND the amount is less than the user's max
+      // If the activiy is in the Restauration category AND it's open AND not closed AND the amount is less than the user's max
       if (($activity->subcategory->isRestauration()) && ($activity->opening_hours < $now) && ($activity->closing_hours > $now) && ($activity->prices()->first()->amount <= $amount_max)) {
-        // Check if the activity is a "real" restaurant
+        // Check if the activity is a Restaurant
         if ($activity->restaurant()->exists()) {
           // The restaurant have got two opening/closings hours. Here we are checking the night shift
           if (($activity->restaurant->opening_hours < $now) && ($activity->restaurant->closing_hours > $now)) {
