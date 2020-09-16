@@ -39,7 +39,7 @@ To use this REST API you will need Composer, a Stripe account and a Navitia acco
 - #### Composer installation on Ubuntu
 
   Just go on [official Composer website](https://getcomposer.org/) and download the installer.
-  Also, be sure to have `git` available in your PATH, `npm` might need it (You can find git [here](https://git-scm.com/).
+  Also, be sure to have `git` available in your PATH, `npm` might need it (You can find git [here](https://git-scm.com/)).
 
 - #### Other Operating Systems
   You can find more information about the installation on the [official Composer website](https://getcomposer.org/).
@@ -48,7 +48,7 @@ To use this REST API you will need Composer, a Stripe account and a Navitia acco
 
 ## Install 📥
 
-    $ git clone https://github.com/AyazBulls/api-mango.git
+    $ git clone https://github.com/b0rdjack/api-mango.git
     $ cd api-mango
     $ composer install
     $ cp .env.example .env
